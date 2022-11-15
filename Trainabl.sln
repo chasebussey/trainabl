@@ -2,7 +2,7 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Trainabl.Client", "Trainabl.Client\Trainabl.Client.csproj", "{AB439953-8C81-46CE-8C98-F8E57A7CBCE7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Trainable.Server", "Trainable.Server\Trainable.Server.csproj", "{6FB2543E-8CBB-48FB-A58D-EC7B654A9792}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Trainabl.Server", "Trainabl.Server\Trainabl.Server.csproj", "{6FB2543E-8CBB-48FB-A58D-EC7B654A9792}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Trainabl.Shared", "Trainabl.Shared\Trainabl.Shared.csproj", "{7A742C05-EC76-438B-A6BE-3A4BEA745394}"
 EndProject

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
+using Trainabl.Shared;
 
-namespace Trainable.Server.Controllers;
+namespace Trainabl.Server.Controllers;
 
 [ApiController]
 [Route("[controller]")]

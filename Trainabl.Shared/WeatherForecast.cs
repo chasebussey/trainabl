@@ -1,4 +1,4 @@
-namespace Trainable.Server;
+namespace Trainabl.Shared;
 
 public class WeatherForecast
 {

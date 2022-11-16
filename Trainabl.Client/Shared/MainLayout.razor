@@ -17,17 +17,20 @@
                         </ActivatorContent>
                         <ChildContent>
                             <MudMenuItem Link="Identity/Account/Manage">Manage Account</MudMenuItem>
+                            @*
                             <MudMenuItem>
-                                <form class="d-flex" method="post" action="Identity/Account/LogOut">
+                                <form class="d-flex" method="post" action="authentication/logout">
                                     <button type="submit" class="nav-item nav-link btn-link btn my-0 py-0">Log out</button>
                                 </form>
                             </MudMenuItem>
+                        *@
+                            <MudMenuItem Link="authentication/logout">Log out</MudMenuItem>
                         </ChildContent>
                     </MudMenu>
                 </Authorized>
                 <NotAuthorized>
                     <MudButton Variant="Variant.Text" Link="Register">Register</MudButton>
-                    <MudButton Variant="Variant.Text" Link="">Log in</MudButton>
+                    <MudButton Variant="Variant.Text" Link="authentication/login">Log in</MudButton>
                 </NotAuthorized>
             </AuthorizeView>
         </div>

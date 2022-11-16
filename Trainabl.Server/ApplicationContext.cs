@@ -14,6 +14,8 @@ public class ApplicationContext : DbContext
 
 	public DbSet<Movement> Movements { get; set; }
 	public DbSet<Workout> Workouts { get; set; }
+	public DbSet<TrainerProfile> TrainerProfiles { get; set; }
+	public DbSet<ClientProfile> ClientProfiles { get; set; }
 
 	protected override void OnModelCreating(ModelBuilder builder)
 	{

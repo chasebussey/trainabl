@@ -6,7 +6,7 @@ using Trainabl.Shared.Models;
 namespace Trainabl.Server.Controllers;
 
 [ApiController]
-[Route("[controller]")]
+[Route("api/[controller]")]
 public class MovementsController : ControllerBase
 {
 	private readonly ApplicationContext _context;
@@ -25,7 +25,7 @@ public class MovementsController : ControllerBase
 		return results > 0;
 	}
 
-	[HttpGet("all")]
+	[HttpGet]
 	public async Task<IEnumerable<Movement>> GetAllMovements()
 	{
 		return await _context.Movements.ToListAsync();

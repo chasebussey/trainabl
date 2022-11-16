@@ -1,16 +1,20 @@
 ﻿@page "/authentication/{action}"
 @using Microsoft.AspNetCore.Components.WebAssembly.Authentication
 @using Microsoft.Extensions.Configuration
+@using Trainabl.Shared.Models
+@using Blazored.LocalStorage
 
 @inject NavigationManager NavigationManager
 @inject IConfiguration Configuration
+@inject HttpClient HttpClient
+@inject ILocalStorageService LocalStorage
 
-<RemoteAuthenticatorView Action="@Action">
+<RemoteAuthenticatorView Action="@Action" OnLogInSucceeded="@OnLoginSucceeded">
     <LogOut>
         @{
             var authority = (string)Configuration["Auth0:Authority"];
             var clientId = (string)Configuration["Auth0:ClientId"];
-        
+
             NavigationManager.NavigateTo($"{authority}/v2/logout?client_id={clientId}");
         }
     </LogOut>
@@ -20,5 +24,44 @@
 
     [Parameter]
     public string? Action { get; set; }
+    
+    [CascadingParameter]
+    public Task<AuthenticationState> AuthState { get; set; }
 
+    public async Task OnLoginSucceeded()
+    {
+        var user = (await AuthState).User;
+
+        if (user.Identity.IsAuthenticated)
+        {
+            if (user.IsInRole("Trainer"))
+            {
+                var email = user.Claims.First(x => x.Type == "email").Value;
+                TrainerProfile trainerProfile;
+
+                try
+                {
+                    trainerProfile = await HttpClient.GetFromJsonAsync<TrainerProfile>($"api/Trainers/{email}");
+                    await LocalStorage.SetItemAsync("trainerProfile", trainerProfile);
+                }
+                catch (Exception e)
+                {
+                    trainerProfile = new TrainerProfile
+                    {
+                        Id = new Guid(),
+                        Name = user.Claims.First(x => x.Type == "name").Value,
+                        Email = email,
+                        Workouts = new List<Workout>(),
+                        ClientProfiles = new List<ClientProfile>()
+                    };
+
+                    var result = await HttpClient.PostAsJsonAsync("api/trainers", trainerProfile);
+                    if (result.IsSuccessStatusCode)
+                    {
+                        await LocalStorage.SetItemAsync("trainerProfile", trainerProfile);
+                    }
+                }
+            }
+        }
+    }
 }

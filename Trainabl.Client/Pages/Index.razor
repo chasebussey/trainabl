@@ -1,5 +1,15 @@
 ﻿@page "/"
+@inject NavigationManager NavigationManager
 
-<PageTitle>Index</PageTitle>
-
-Welcome to your new app.
+<AuthorizeView>
+    <Authorized>
+        @{
+            NavigationManager.NavigateTo("TrainerDashboard");
+        }
+    </Authorized>
+    <NotAuthorized>
+        @{
+            NavigationManager.NavigateTo("authentication/login");
+        }
+    </NotAuthorized>
+</AuthorizeView>

@@ -9,12 +9,13 @@ public class Workout
 	public bool IsTemplate { get;set; }
 	public WorkoutType WorkoutType { get; set; }
 	
-	public string TrainerId { get; set; }
+	public Guid TrainerId { get; set; }
 	public Guid? ClientProfileId { get; set; }
-	//
-	// public Trainer Trainer { get; set; }
-	// public ClientProfile ClientProfile { get; set; }
-	//
+	
+	public TrainerProfile TrainerProfile { get; set; }
+	public ClientProfile ClientProfile { get; set; }
+	
+	// TODO: Implement WorkoutNotes
 	// public List<WorkoutNote>? WorkoutNotes { get; set; }
 }
 

@@ -37,6 +37,7 @@ builder.Services.AddAuth0OidcAuthentication(options =>
 	options.ProviderOptions.ResponseType = "code";
 	options.ProviderOptions.AdditionalProviderParameters.Add(
 		"audience", builder.Configuration["Auth0:Audience"]);
+	options.ProviderOptions.DefaultScopes.Add("email");
 	var authority = builder.Configuration["Auth0:Authority"];
 	var clientId  = builder.Configuration["Auth0:ClientId"];
 	options.ProviderOptions.MetadataSeed.EndSessionEndpoint =

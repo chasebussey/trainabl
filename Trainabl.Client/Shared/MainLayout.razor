@@ -1,18 +1,70 @@
 ﻿@inherits LayoutComponentBase
+<MudThemeProvider IsDarkMode="@_isDarkMode"/>
+<MudDialogProvider/>
+<MudSnackbarProvider/>
 
-<div class="page">
-    <div class="sidebar">
-        <NavMenu/>
-    </div>
-
-    <main>
-        <div class="top-row px-4 auth">
-            <LoginDisplay/>
-            <a href="https://docs.microsoft.com/aspnet/" target="_blank">About</a>
+<MudLayout>
+    <MudAppBar Elevation="0">
+        <div class="d-flex align-center" style="width: 100%;">
+            <MudIconButton Icon="@Icons.Filled.Menu" Edge="Edge.Start" OnClick="ToggleDrawer"/>
+            <MudText Typo="Typo.h5">KinesicSpace</MudText>
+            <MudSpacer/>
+            <AuthorizeView>
+                <Authorized>
+                    <MudMenu AnchorOrigin="Origin.BottomRight">
+                        <ActivatorContent>
+                            <MudAvatar Color="Color.Tertiary">@context.User.Identity?.Name[0]</MudAvatar>
+                        </ActivatorContent>
+                        <ChildContent>
+                            <MudMenuItem Link="Identity/Account/Manage">Manage Account</MudMenuItem>
+                            <MudMenuItem>
+                                <form class="d-flex" method="post" action="Identity/Account/LogOut">
+                                    <button type="submit" class="nav-item nav-link btn-link btn my-0 py-0">Log out</button>
+                                </form>
+                            </MudMenuItem>
+                        </ChildContent>
+                    </MudMenu>
+                </Authorized>
+                <NotAuthorized>
+                    <MudButton Variant="Variant.Text" Link="Register">Register</MudButton>
+                    <MudButton Variant="Variant.Text" Link="">Log in</MudButton>
+                </NotAuthorized>
+            </AuthorizeView>
         </div>
+    </MudAppBar>
+    <MudDrawer @bind-Open="_drawerOpen" Elevation="0" Variant="DrawerVariant.Mini" ClipMode="DrawerClipMode.Always" >
+        <MudNavMenu Bordered="true">
+            <MudNavLink Href="TrainerDashboard" Icon="@Icons.Filled.Dashboard">Dashboard</MudNavLink>
+            <MudNavLink Href="WorkoutLibrary" Icon="@Icons.Filled.LocalLibrary">Workout Library</MudNavLink>
+        </MudNavMenu>
+            <MudSpacer/>
+            <div class="d-inline-flex align-center">
+                <MudToggleIconButton @bind-Toggled="_isDarkMode" Icon="@Icons.Filled.DarkMode" Title="Dark Mode"
+                                     ToggledIcon="@Icons.Material.Filled.LightMode" ToggledTitle="Light Mode"
+                                     Class="ml-1 justify-start"/>
+                @if (_drawerOpen)
+                {
+                    <span @onclick="ToggleDarkMode">@(_isDarkMode ? "Light Mode" : "DarkMode")</span>
+                }
+            </div>
+    </MudDrawer>
+    <MudMainContent>
+        <MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-8 px-8">@Body</MudContainer>
+    </MudMainContent>
+</MudLayout>
 
-        <article class="content px-4">
-            @Body
-        </article>
-    </main>
-</div>
+@code {
+
+    bool _drawerOpen = true;
+    bool _isDarkMode = true;
+
+    private void ToggleDrawer()
+    {
+        _drawerOpen = !_drawerOpen;
+    }
+
+    private void ToggleDarkMode()
+    {
+        _isDarkMode = !_isDarkMode;
+    }
+}

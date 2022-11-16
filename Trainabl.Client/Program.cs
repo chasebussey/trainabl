@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 using MudBlazor.Services;
 using Trainabl.Client;
+using Trainabl.Client.Shared;
+using Trainabl.Client.Authentication;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -18,14 +20,28 @@ builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>()
 builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddMudServices();
 
+// builder.Services.AddOidcAuthentication(options =>
+// {
+// 	// Configure your authentication provider options here.
+// 	// For more information, see https://aka.ms/blazor-standalone-auth
+// 	builder.Configuration.Bind("Auth0", options.ProviderOptions);
+// 	options.ProviderOptions.ResponseType = "code";
+// 	options.ProviderOptions.AdditionalProviderParameters.Add(
+// 		"audience", builder.Configuration["Auth0:Audience"]);
+// }).AddAccountClaimsPrincipalFactory<ArrayClaimsPrincipalFactory<RemoteUserAccount>>();
 
-builder.Services.AddOidcAuthentication(options =>
+// see https://github.com/dotnet/aspnetcore/issues/40046
+builder.Services.AddAuth0OidcAuthentication(options =>
 {
-	// Configure your authentication provider options here.
-	// For more information, see https://aka.ms/blazor-standalone-auth
 	builder.Configuration.Bind("Auth0", options.ProviderOptions);
 	options.ProviderOptions.ResponseType = "code";
-	options.ProviderOptions.AdditionalProviderParameters.Add("audience", builder.Configuration["Auth0:Audience"]);
-});
+	options.ProviderOptions.AdditionalProviderParameters.Add(
+		"audience", builder.Configuration["Auth0:Audience"]);
+	var authority = builder.Configuration["Auth0:Authority"];
+	var clientId  = builder.Configuration["Auth0:ClientId"];
+	options.ProviderOptions.MetadataSeed.EndSessionEndpoint =
+		$"{authority}/v2/logout?client_id={clientId}&returnTo={builder.HostEnvironment.BaseAddress}";
+}).AddAccountClaimsPrincipalFactory<ArrayClaimsPrincipalFactory<RemoteUserAccount>>();
+       
 
 await builder.Build().RunAsync();

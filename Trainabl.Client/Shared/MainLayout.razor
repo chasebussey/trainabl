@@ -1,4 +1,8 @@
-﻿@inherits LayoutComponentBase
+﻿@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+@inherits LayoutComponentBase
+@inject NavigationManager NavigationManager
+@inject SignOutSessionStateManager SignOutManager
+@inject IConfiguration Configuration
 <MudThemeProvider IsDarkMode="@_isDarkMode"/>
 <MudDialogProvider/>
 <MudSnackbarProvider/>
@@ -24,7 +28,7 @@
                                 </form>
                             </MudMenuItem>
                         *@
-                            <MudMenuItem Link="authentication/logout">Log out</MudMenuItem>
+                            <MudMenuItem OnClick="BeginSignOut">Log out</MudMenuItem>
                         </ChildContent>
                     </MudMenu>
                 </Authorized>
@@ -69,5 +73,11 @@
     private void ToggleDarkMode()
     {
         _isDarkMode = !_isDarkMode;
+    }
+    
+    private async Task BeginSignOut(MouseEventArgs args)
+    {
+        await SignOutManager.SetSignOutState();
+        NavigationManager.NavigateTo("authentication/logout");
     }
 }

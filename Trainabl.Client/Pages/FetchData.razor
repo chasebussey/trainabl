@@ -2,7 +2,7 @@
 @using Trainabl.Shared
 @using Microsoft.AspNetCore.Components.WebAssembly.Authentication
 @inject HttpClient Http
-@attribute [Authorize]
+@attribute [Authorize(Roles = "Trainer")]
 
 <PageTitle>Weather forecast</PageTitle>
 

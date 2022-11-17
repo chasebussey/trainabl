@@ -1,0 +1,69 @@
+@using Trainabl.Client.Services
+@using Trainabl.Shared.Models
+@using Blazored.LocalStorage
+@inject UserSettingsService UserSettingsService
+@inject ILocalStorageService LocalStorageService
+@implements IDisposable
+@attribute [Authorize]
+
+@if (_userSettings == null)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <CascadingValue Value="@_userSettings" IsFixed="false">@ChildContent</CascadingValue>
+}
+@code {
+    private UserSettings _userSettings = null;
+    
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+    [CascadingParameter]
+    Task<AuthenticationState> AuthState { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var user = (await AuthState).User;
+        if (user.Identity is {IsAuthenticated: true })
+        {
+            Console.WriteLine("App: user auth'd oninit");
+        }
+        else
+        {
+            Console.WriteLine("App: init'd w/o auth");
+        }
+        LocalStorageService.Changed += UserSettingsChanged;
+        await Refresh();
+    }
+
+    public void Dispose()
+    {
+        LocalStorageService.Changed += UserSettingsChanged;
+    }
+
+    private async void UserSettingsChanged(object sender, ChangedEventArgs e)
+    {
+        if (e.Key == "userSettings")
+        {
+            await InvokeAsync(async () =>
+            {
+                await Refresh();
+                StateHasChanged();
+            });
+        }
+    }
+
+    private async Task Refresh()
+    {
+        _userSettings = await UserSettingsService.Get();
+        Console.WriteLine($"App: UserSettings" +
+                          $"LightMode = {_userSettings.PreferLightMode}" +
+                          $"Drawer = {_userSettings.PreferMiniDrawer}");
+    }
+
+    private async Task RefreshFromServer()
+    {
+        _userSettings = await UserSettingsService.Get(true);
+    }
+}

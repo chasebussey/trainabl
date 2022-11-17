@@ -52,6 +52,12 @@ public class TrainersController : ControllerBase
 		                                           .ToListAsync();
 		return clients;
 	}
+
+	[HttpGet("{trainerId:guid}/settings")]
+	public async Task<UserSettings?> GetUserSettingForTrainer(Guid trainerId)
+	{
+		return await _context.UserSettings.FirstOrDefaultAsync(x => x.UserId == trainerId);
+	}
 	
 	#endregion
 	

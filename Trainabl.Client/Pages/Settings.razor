@@ -1,0 +1,43 @@
+@using Trainabl.Shared.Models
+@using Blazored.LocalStorage
+@using Trainabl.Client.Services
+@inject HttpClient HttpClient
+@inject ILocalStorageService LocalStorageService
+<MudDialog>
+    <DialogContent>
+        <MudSwitch @bind-Checked="UserSettings.PreferMiniDrawer" Label="Keep the drawer collapsed"></MudSwitch>
+        <MudSwitch @bind-Checked="UserSettings.PreferLightMode" Label="Use light mode"></MudSwitch>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton OnClick="Submit" Color="Color.Primary">Ok</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    MudDialogInstance MudDialogInstance { get; set; }
+    
+    [CascadingParameter]
+    public UserSettings UserSettings { get; set; }
+
+    private async Task Submit()
+    {
+        if (UserSettings.Id == Guid.Empty)
+        {
+            var responseMessage = await HttpClient.PostAsJsonAsync($"api/settings", UserSettings);
+            if (responseMessage.IsSuccessStatusCode)
+            {
+                var newSettings = await responseMessage.Content.ReadFromJsonAsync<UserSettings>();
+                UserSettings.Id = newSettings.Id;
+            }
+        }
+        else
+        {
+            await HttpClient.PutAsJsonAsync($"api/settings/{UserSettings.Id}", UserSettings);
+        }
+        MudDialogInstance.Close(DialogResult.Ok(true));
+    }
+
+    void Cancel() => MudDialogInstance.Cancel();
+}

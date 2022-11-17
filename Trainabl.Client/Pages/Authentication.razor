@@ -43,6 +43,7 @@
                 {
                     trainerProfile = await HttpClient.GetFromJsonAsync<TrainerProfile>($"api/Trainers/{email}");
                     await LocalStorage.SetItemAsync("trainerProfile", trainerProfile);
+                    await LoadUserSettings(trainerProfile);
                 }
                 catch (Exception e)
                 {
@@ -62,6 +63,19 @@
                     }
                 }
             }
+        }
+    }
+
+    private async Task LoadUserSettings(TrainerProfile trainerProfile)
+    {
+        var trainerId = trainerProfile.Id;
+        try
+        {
+            var userSettings = await HttpClient.GetFromJsonAsync<UserSettings>($"api/Trainers/{trainerId}/settings");
+            await LocalStorage.SetItemAsync("userSettings", userSettings);
+        }
+        catch (Exception e)
+        {
         }
     }
 }

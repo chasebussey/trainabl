@@ -1,8 +1,11 @@
 ﻿@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+@using Trainabl.Client.Pages
+@using Trainabl.Shared.Models
 @inherits LayoutComponentBase
 @inject NavigationManager NavigationManager
 @inject SignOutSessionStateManager SignOutManager
 @inject IConfiguration Configuration
+@inject IDialogService DialogService
 <MudThemeProvider IsDarkMode="@_isDarkMode"/>
 <MudDialogProvider/>
 <MudSnackbarProvider/>
@@ -44,16 +47,10 @@
             <MudNavLink Href="TrainerDashboard" Icon="@Icons.Filled.Dashboard">Dashboard</MudNavLink>
             <MudNavLink Href="WorkoutLibrary" Icon="@Icons.Filled.LocalLibrary">Workout Library</MudNavLink>
         </MudNavMenu>
-            <MudSpacer/>
-            <div class="d-inline-flex align-center">
-                <MudToggleIconButton @bind-Toggled="_isDarkMode" Icon="@Icons.Filled.DarkMode" Title="Dark Mode"
-                                     ToggledIcon="@Icons.Material.Filled.LightMode" ToggledTitle="Light Mode"
-                                     Class="ml-1 justify-start"/>
-                @if (_drawerOpen)
-                {
-                    <span @onclick="ToggleDarkMode">@(_isDarkMode ? "Light Mode" : "DarkMode")</span>
-                }
-            </div>
+        <MudSpacer/>
+        <MudNavMenu>
+            <MudNavLink Icon="@Icons.Filled.Settings" OnClick="ShowSettingsDialog">Settings</MudNavLink>
+        </MudNavMenu>
     </MudDrawer>
     <MudMainContent>
         <MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-8 px-8">@Body</MudContainer>
@@ -61,9 +58,26 @@
 </MudLayout>
 
 @code {
+    [CascadingParameter]
+    public UserSettings UserSettings { get; set; }
 
-    bool _drawerOpen = true;
-    bool _isDarkMode = true;
+    protected override Task OnInitializedAsync()
+    {
+        Console.WriteLine("App: MainLayout OnInit");
+        _drawerOpen = !UserSettings.PreferMiniDrawer;
+        _isDarkMode = !UserSettings.PreferLightMode;
+        return base.OnInitializedAsync();
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        _drawerOpen = !UserSettings.PreferMiniDrawer;
+        _isDarkMode = !UserSettings.PreferLightMode;
+        base.OnAfterRender(firstRender);
+    }
+
+    bool _drawerOpen;
+    bool _isDarkMode;
 
     private void ToggleDrawer()
     {
@@ -79,5 +93,11 @@
     {
         await SignOutManager.SetSignOutState();
         NavigationManager.NavigateTo("authentication/logout");
+    }
+
+    private void ShowSettingsDialog()
+    {
+        var options = new DialogOptions { CloseOnEscapeKey = true };
+        DialogService.Show<Settings>("Settings", options);
     }
 }

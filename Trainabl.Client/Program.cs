@@ -6,6 +6,7 @@ using MudBlazor.Services;
 using Trainabl.Client;
 using Trainabl.Client.Shared;
 using Trainabl.Client.Authentication;
+using Trainabl.Client.Services;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -19,16 +20,7 @@ builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>()
                                      .CreateClient("ServerAPI"));
 builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddMudServices();
-
-// builder.Services.AddOidcAuthentication(options =>
-// {
-// 	// Configure your authentication provider options here.
-// 	// For more information, see https://aka.ms/blazor-standalone-auth
-// 	builder.Configuration.Bind("Auth0", options.ProviderOptions);
-// 	options.ProviderOptions.ResponseType = "code";
-// 	options.ProviderOptions.AdditionalProviderParameters.Add(
-// 		"audience", builder.Configuration["Auth0:Audience"]);
-// }).AddAccountClaimsPrincipalFactory<ArrayClaimsPrincipalFactory<RemoteUserAccount>>();
+builder.Services.AddScoped<UserSettingsService>();
 
 // see https://github.com/dotnet/aspnetcore/issues/40046
 builder.Services.AddAuth0OidcAuthentication(options =>

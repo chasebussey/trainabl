@@ -39,11 +39,16 @@ namespace Trainabl.Server.Migrations
                     b.Property<Guid>("TrainerProfileId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid?>("UserSettingsId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.HasKey("Id");
 
                     b.HasIndex("TrainerProfileId");
 
-                    b.ToTable("ClientProfiles");
+                    b.HasIndex("UserSettingsId");
+
+                    b.ToTable("ClientProfiles", (string)null);
                 });
 
             modelBuilder.Entity("Trainabl.Shared.Models.Movement", b =>
@@ -65,7 +70,7 @@ namespace Trainabl.Server.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Movements");
+                    b.ToTable("Movements", (string)null);
                 });
 
             modelBuilder.Entity("Trainabl.Shared.Models.TrainerProfile", b =>
@@ -82,9 +87,34 @@ namespace Trainabl.Server.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<Guid?>("UserSettingsId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.HasKey("Id");
 
-                    b.ToTable("TrainerProfiles");
+                    b.HasIndex("UserSettingsId");
+
+                    b.ToTable("TrainerProfiles", (string)null);
+                });
+
+            modelBuilder.Entity("Trainabl.Shared.Models.UserSettings", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("PreferLightMode")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("PreferMiniDrawer")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("UserSettings", (string)null);
                 });
 
             modelBuilder.Entity("Trainabl.Shared.Models.Workout", b =>
@@ -107,9 +137,8 @@ namespace Trainabl.Server.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("TrainerId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<Guid>("TrainerId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("TrainerProfileId")
                         .HasColumnType("uniqueidentifier");
@@ -123,16 +152,33 @@ namespace Trainabl.Server.Migrations
 
                     b.HasIndex("TrainerProfileId");
 
-                    b.ToTable("Workouts");
+                    b.ToTable("Workouts", (string)null);
                 });
 
             modelBuilder.Entity("Trainabl.Shared.Models.ClientProfile", b =>
                 {
-                    b.HasOne("Trainabl.Shared.Models.TrainerProfile", null)
+                    b.HasOne("Trainabl.Shared.Models.TrainerProfile", "TrainerProfile")
                         .WithMany("ClientProfiles")
                         .HasForeignKey("TrainerProfileId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("Trainabl.Shared.Models.UserSettings", "UserSettings")
+                        .WithMany()
+                        .HasForeignKey("UserSettingsId");
+
+                    b.Navigation("TrainerProfile");
+
+                    b.Navigation("UserSettings");
+                });
+
+            modelBuilder.Entity("Trainabl.Shared.Models.TrainerProfile", b =>
+                {
+                    b.HasOne("Trainabl.Shared.Models.UserSettings", "UserSettings")
+                        .WithMany()
+                        .HasForeignKey("UserSettingsId");
+
+                    b.Navigation("UserSettings");
                 });
 
             modelBuilder.Entity("Trainabl.Shared.Models.Workout", b =>

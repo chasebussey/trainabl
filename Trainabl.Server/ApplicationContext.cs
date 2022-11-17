@@ -16,6 +16,8 @@ public class ApplicationContext : DbContext
 	public DbSet<Workout> Workouts { get; set; }
 	public DbSet<TrainerProfile> TrainerProfiles { get; set; }
 	public DbSet<ClientProfile> ClientProfiles { get; set; }
+	
+	public DbSet<UserSettings> UserSettings { get; set; }
 
 	protected override void OnModelCreating(ModelBuilder builder)
 	{
@@ -29,5 +31,10 @@ public class ApplicationContext : DbContext
 			            e => JsonSerializer.Serialize(e, (JsonSerializerOptions)null),
 			            e => JsonSerializer.Deserialize<List<Exercise>>(e, (JsonSerializerOptions)null)
 		            );
+
+		// builder.Entity<TrainerProfile>()
+		//        .HasMany(x => x.ClientProfiles)
+		//        .WithOne(x => x.TrainerProfile)
+		//        .OnDelete(DeleteBehavior.NoAction);
 	}
 }

@@ -24,36 +24,62 @@ namespace Trainabl.Server.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "TrainerProfile",
+                name: "UserSettings",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    PreferMiniDrawer = table.Column<bool>(type: "bit", nullable: false),
+                    PreferLightMode = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserSettings", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "TrainerProfiles",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Email = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    UserSettingsId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_TrainerProfile", x => x.Id);
+                    table.PrimaryKey("PK_TrainerProfiles", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_TrainerProfiles_UserSettings_UserSettingsId",
+                        column: x => x.UserSettingsId,
+                        principalTable: "UserSettings",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
-                name: "ClientProfile",
+                name: "ClientProfiles",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     TrainerProfileId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Email = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    UserSettingsId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ClientProfile", x => x.Id);
+                    table.PrimaryKey("PK_ClientProfiles", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_ClientProfile_TrainerProfile_TrainerProfileId",
+                        name: "FK_ClientProfiles_TrainerProfiles_TrainerProfileId",
                         column: x => x.TrainerProfileId,
-                        principalTable: "TrainerProfile",
+                        principalTable: "TrainerProfiles",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ClientProfiles_UserSettings_UserSettingsId",
+                        column: x => x.UserSettingsId,
+                        principalTable: "UserSettings",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -65,7 +91,7 @@ namespace Trainabl.Server.Migrations
                     Exercises = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     IsTemplate = table.Column<bool>(type: "bit", nullable: false),
                     WorkoutType = table.Column<int>(type: "int", nullable: false),
-                    TrainerId = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    TrainerId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     ClientProfileId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     TrainerProfileId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
                 },
@@ -73,22 +99,32 @@ namespace Trainabl.Server.Migrations
                 {
                     table.PrimaryKey("PK_Workouts", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Workouts_ClientProfile_ClientProfileId",
+                        name: "FK_Workouts_ClientProfiles_ClientProfileId",
                         column: x => x.ClientProfileId,
-                        principalTable: "ClientProfile",
+                        principalTable: "ClientProfiles",
                         principalColumn: "Id");
                     table.ForeignKey(
-                        name: "FK_Workouts_TrainerProfile_TrainerProfileId",
+                        name: "FK_Workouts_TrainerProfiles_TrainerProfileId",
                         column: x => x.TrainerProfileId,
-                        principalTable: "TrainerProfile",
+                        principalTable: "TrainerProfiles",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_ClientProfile_TrainerProfileId",
-                table: "ClientProfile",
+                name: "IX_ClientProfiles_TrainerProfileId",
+                table: "ClientProfiles",
                 column: "TrainerProfileId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ClientProfiles_UserSettingsId",
+                table: "ClientProfiles",
+                column: "UserSettingsId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TrainerProfiles_UserSettingsId",
+                table: "TrainerProfiles",
+                column: "UserSettingsId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Workouts_ClientProfileId",
@@ -110,10 +146,13 @@ namespace Trainabl.Server.Migrations
                 name: "Workouts");
 
             migrationBuilder.DropTable(
-                name: "ClientProfile");
+                name: "ClientProfiles");
 
             migrationBuilder.DropTable(
-                name: "TrainerProfile");
+                name: "TrainerProfiles");
+
+            migrationBuilder.DropTable(
+                name: "UserSettings");
         }
     }
 }

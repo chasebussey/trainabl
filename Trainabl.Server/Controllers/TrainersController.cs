@@ -40,7 +40,7 @@ public class TrainersController : ControllerBase
 	[HttpGet("{trainerId:guid}/workouts")]
 	public async Task<IEnumerable<Workout>> GetWorkoutsByTrainer(Guid trainerId)
 	{
-		List<Workout> workouts = await _context.Workouts.Where(x => x.TrainerId == trainerId)
+		List<Workout> workouts = await _context.Workouts.Where(x => x.TrainerProfileId == trainerId)
 		                                       .ToListAsync();
 		return workouts;
 	}

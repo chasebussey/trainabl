@@ -25,4 +25,24 @@ public class WorkoutsController : ControllerBase
 	}
 
 	#endregion
+	
+	#region Post
+
+	[HttpPost]
+	public async Task<IActionResult> CreateWorkout(WorkoutDTO workoutDto)
+	{
+		try
+		{
+			var workout = Workout.WorkoutFromDto(workoutDto);
+			_context.Workouts.Add(workout);
+
+			await _context.SaveChangesAsync();
+			return Created(workout.Id.ToString(), workout);
+		}
+		catch (Exception e)
+		{
+			return BadRequest();
+		}
+	}
+	#endregion
 }

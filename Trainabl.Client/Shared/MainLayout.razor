@@ -24,13 +24,6 @@
                         </ActivatorContent>
                         <ChildContent>
                             <MudMenuItem Link="Identity/Account/Manage">Manage Account</MudMenuItem>
-                            @*
-                            <MudMenuItem>
-                                <form class="d-flex" method="post" action="authentication/logout">
-                                    <button type="submit" class="nav-item nav-link btn-link btn my-0 py-0">Log out</button>
-                                </form>
-                            </MudMenuItem>
-                        *@
                             <MudMenuItem OnClick="BeginSignOut">Log out</MudMenuItem>
                         </ChildContent>
                     </MudMenu>
@@ -46,6 +39,7 @@
         <MudNavMenu Bordered="true">
             <MudNavLink Href="TrainerDashboard" Icon="@Icons.Filled.Dashboard">Dashboard</MudNavLink>
             <MudNavLink Href="WorkoutLibrary" Icon="@Icons.Filled.LocalLibrary">Workout Library</MudNavLink>
+            <MudNavLink Href="NewWorkout" Icon="@Icons.Filled.FitnessCenter">New Workout</MudNavLink>
         </MudNavMenu>
         <MudSpacer/>
         <MudNavMenu>

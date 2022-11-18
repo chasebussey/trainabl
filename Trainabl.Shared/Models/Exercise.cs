@@ -2,10 +2,10 @@ namespace Trainabl.Shared.Models;
 
 public class Exercise
 {
-	public Movement Movement { get; set; }
 	public string MovementName { get; set; }
 	public int? Sets { get; set; }
-	public string? SetMeasure { get; set; }
+	public int? Reps { get; set; }
+	public string? Time { get; set; }
 	
 	public SetMeasureType SetMeasureType { get; set; }
 
@@ -14,8 +14,8 @@ public class Exercise
 		return SetMeasureType switch
 		{
 			SetMeasureType.Warmup  => $"{MovementName} warmup",
-			SetMeasureType.Reps    => $"{MovementName}: {Sets} x {SetMeasure}",
-			SetMeasureType.Time    => $"{MovementName}: {Sets} for {SetMeasure}",
+			SetMeasureType.Reps    => $"{MovementName}: {Sets} x {Reps}",
+			SetMeasureType.Time    => $"{MovementName}: {Sets} for {Time}",
 			SetMeasureType.Failure => $"{MovementName}: {Sets} to failure",
 			_                      => throw new ArgumentOutOfRangeException()
 		};

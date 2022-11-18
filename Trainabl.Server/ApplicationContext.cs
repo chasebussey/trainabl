@@ -32,9 +32,8 @@ public class ApplicationContext : DbContext
 			            e => JsonSerializer.Deserialize<List<Exercise>>(e, (JsonSerializerOptions)null)
 		            );
 
-		// builder.Entity<TrainerProfile>()
-		//        .HasMany(x => x.ClientProfiles)
-		//        .WithOne(x => x.TrainerProfile)
-		//        .OnDelete(DeleteBehavior.NoAction);
+		builder.Entity<Workout>()
+		       .Property(x => x.IsDraft)
+		       .HasDefaultValue(true);
 	}
 }

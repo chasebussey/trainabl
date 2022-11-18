@@ -34,11 +34,8 @@ public class UserSettingsService
 		// Check for a user ID
 		TrainerProfile? trainerProfile = await _localStorageService.GetItemAsync<TrainerProfile>("trainerProfile");
 		Guid? trainerId      = trainerProfile?.Id;
-		Console.WriteLine($"App: trainerId = {trainerId}");
-		Console.WriteLine($"App: trainerId.Value = {trainerId.Value}");
 
 		var result = await _localStorageService.GetItemAsync<UserSettings>(KeyName) ?? new UserSettings();
-		Console.WriteLine($"App: result.Id = {result.Id}");
 		if (trainerId is not null && result.UserId != trainerId.Value)
 		{
 			result.UserId = trainerId.Value;
@@ -51,7 +48,6 @@ public class UserSettingsService
 
 	public async Task Save()
 	{
-		Console.WriteLine("App: saving settings now");
 		await _localStorageService.SetItemAsync(KeyName, _userSettings);
 	}
 

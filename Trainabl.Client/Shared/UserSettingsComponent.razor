@@ -24,15 +24,6 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        var user = (await AuthState).User;
-        if (user.Identity is {IsAuthenticated: true })
-        {
-            Console.WriteLine("App: user auth'd oninit");
-        }
-        else
-        {
-            Console.WriteLine("App: init'd w/o auth");
-        }
         LocalStorageService.Changed += UserSettingsChanged;
         await Refresh();
     }
@@ -57,9 +48,6 @@ else
     private async Task Refresh()
     {
         _userSettings = await UserSettingsService.Get();
-        Console.WriteLine($"App: UserSettings" +
-                          $"LightMode = {_userSettings.PreferLightMode}" +
-                          $"Drawer = {_userSettings.PreferMiniDrawer}");
     }
 
     private async Task RefreshFromServer()

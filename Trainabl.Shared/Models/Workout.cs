@@ -13,7 +13,7 @@ public class Workout
 	public Guid? ClientProfileId { get; set; }
 	
 	public TrainerProfile TrainerProfile { get; set; }
-	public ClientProfile ClientProfile { get; set; }
+	public ClientProfile? ClientProfile { get; set; }
 	
 	// TODO: Implement WorkoutNotes
 	// public List<WorkoutNote>? WorkoutNotes { get; set; }

@@ -63,7 +63,6 @@
 
     protected override Task OnInitializedAsync()
     {
-        Console.WriteLine("App: MainLayout OnInit");
         _drawerOpen = !UserSettings.PreferMiniDrawer;
         _isDarkMode = !UserSettings.PreferLightMode;
         return base.OnInitializedAsync();

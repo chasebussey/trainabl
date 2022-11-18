@@ -12,7 +12,7 @@
             <MudButton Class="flex-grow-0" Color="Color.Primary" Variant="Variant.Filled" OnClick="async () => await Save()">Save as Complete</MudButton>
         </div>
         <div class="d-inline-flex align-center gap-4">
-            <MudCheckBox T="bool" Label="Template"></MudCheckBox>
+            <MudCheckBox T="bool" Label="Template" @bind-Checked="Workout.IsTemplate"></MudCheckBox>
         
             <MudRadioGroup @bind-SelectedOption="Workout.WorkoutType">
                 <MudRadio Option="@(WorkoutType.Standard)">Standard</MudRadio>

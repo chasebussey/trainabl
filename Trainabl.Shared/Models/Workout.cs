@@ -20,9 +20,8 @@ public class Workout
 	// TODO: Implement WorkoutNotes
 	// public List<WorkoutNote>? WorkoutNotes { get; set; }
 
-	public static Workout WorkoutFromDto(WorkoutDTO dto)
-	{
-		Workout workout = new()
+	public static Workout WorkoutFromDto(WorkoutDTO dto) =>
+		new()
 		{
 			Name             = dto.Name,
 			Exercises        = dto.Exercises,
@@ -33,8 +32,19 @@ public class Workout
 			TrainerProfileId = dto.TrainerProfileId,
 			ClientProfileId  = dto.ClientProfileId
 		};
-		return workout;
-	}
+
+	public static WorkoutDTO WorkoutToDto(Workout workout) =>
+		new WorkoutDTO
+		{
+			Name             = workout.Name,
+			Exercises        = workout.Exercises,
+			IsTemplate       = workout.IsTemplate,
+			IsDraft          = workout.IsDraft,
+			Description      = workout.Description,
+			WorkoutType      = workout.WorkoutType,
+			TrainerProfileId = workout.TrainerProfileId,
+			ClientProfileId  = workout.ClientProfileId
+		};
 }
 
 public enum WorkoutType

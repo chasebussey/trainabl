@@ -19,9 +19,9 @@ public class WorkoutsController : ControllerBase
 	#region Get
 
 	[HttpGet]
-	public Task<IEnumerable<Workout>> GetAllWorkouts()
+	public async Task<IEnumerable<WorkoutDTO>> GetAllWorkouts()
 	{
-		return Task.FromResult(_context.Workouts.AsEnumerable());
+		return await _context.Workouts.Select(x => Workout.WorkoutToDto(x)).ToListAsync();
 	}
 
 	#endregion

@@ -38,9 +38,10 @@ public class TrainersController : ControllerBase
 	}
 
 	[HttpGet("{trainerId:guid}/workouts")]
-	public async Task<IEnumerable<Workout>> GetWorkoutsByTrainer(Guid trainerId)
+	public async Task<IEnumerable<WorkoutDTO>> GetWorkoutsByTrainer(Guid trainerId)
 	{
-		List<Workout> workouts = await _context.Workouts.Where(x => x.TrainerProfileId == trainerId)
+		List<WorkoutDTO> workouts = await _context.Workouts.Where(x => x.TrainerProfileId == trainerId)
+		                                       .Select(x => Workout.WorkoutToDto(x))
 		                                       .ToListAsync();
 		return workouts;
 	}

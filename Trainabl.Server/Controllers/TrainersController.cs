@@ -47,9 +47,10 @@ public class TrainersController : ControllerBase
 	}
 
 	[HttpGet("{trainerId:guid}/clients")]
-	public async Task<IEnumerable<ClientProfile>> GetClientsByTrainer(Guid trainerId)
+	public async Task<IEnumerable<ClientProfileDTO>> GetClientsByTrainer(Guid trainerId)
 	{
-		List<ClientProfile> clients = await _context.ClientProfiles.Where(x => x.TrainerProfileId == trainerId)
+		List<ClientProfileDTO> clients = await _context.ClientProfiles.Where(x => x.TrainerProfileId == trainerId)
+		                                            .Select(x => ClientProfile.ClientProfileToDto(x))
 		                                           .ToListAsync();
 		return clients;
 	}

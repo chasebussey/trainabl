@@ -8,11 +8,32 @@ public class ClientProfile
 	public string Name { get; set; }
 	public string Email { get; set; }
 	public UserSettings? UserSettings { get; set; }
+	public DateTime CreatedUTC { get; set; }
 	
 	public List<Workout> Workouts { get; set; }
 
 	public TrainerProfile TrainerProfile { get; set; }
 	// TODO: Implement Metrics and Goals
-	// public List<Metric> Metrics { get; set; }
+	public List<Metric> Metrics { get; set; }
 	// public List<Goal> Goals { get; set; }
+
+	public static ClientProfileDTO ClientProfileToDto(ClientProfile client) =>
+		new()
+		{
+			TrainerProfileId = client.TrainerProfileId,
+			Name             = client.Name,
+			Email            = client.Email,
+			Metrics          = client.Metrics,
+			CreatedUTC       = client.CreatedUTC
+		};
+
+	public static ClientProfile ClientProfileFromDto(ClientProfileDTO dto) =>
+		new()
+		{
+			TrainerProfileId = dto.TrainerProfileId,
+			Name             = dto.Name,
+			Email            = dto.Email,
+			Metrics          = dto.Metrics,
+			CreatedUTC       = dto.CreatedUTC
+		};
 }

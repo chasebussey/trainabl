@@ -1,0 +1,83 @@
+@using Trainabl.Shared.Models
+@using Blazored.LocalStorage
+@inject HttpClient HttpClient
+@inject ISnackbar Snackbar
+<MudDialog>
+    <DialogContent>
+        <MudForm>
+            <MudTextField T="string" @bind-Value="_client.Name" Label="Name"/>
+            <MudTextField T="string" @bind-Value="_client.Email" Label="Email"/>
+            <div class="d-flex gap-2">
+                <MudNumericField T="double" @bind-Value="_height.Value" Label="Height (in.)"/>
+                <MudNumericField T="double" @bind-Value="_weight.Value" Label="Weight (lbs.)"/>
+            </div>
+            <MudCheckBox T="bool" @bind-Checked="_sendEmail" Label="Send email to client to activate their account?"/>
+            <!-- TODO: Control to assign workouts on creation --> 
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Save">Save</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [Parameter]
+    public Guid TrainerId { get; set; }
+    [CascadingParameter]
+    public MudDialogInstance MudDialog { get; set; }
+
+    private ClientProfileDTO _client = new ClientProfileDTO();
+
+    private Metric _height = new Metric()
+    {
+        Name = "Height"
+    };
+
+    private Metric _weight = new Metric()
+    {
+        Name = "Weight"
+    };
+
+    private Metric _bmi = new Metric()
+    {
+        Name = "BMI"
+    };
+
+    private bool _sendEmail;
+
+    private void Cancel() => MudDialog.Cancel();
+
+    private async Task Save()
+    {
+        // calculate _bmi
+        _bmi.Value = _weight.Value / (_height.Value * _height.Value) * 703;
+        
+        // assign created dates for all measurements
+        _bmi.CreatedUTC = DateTime.UtcNow;
+        _height.CreatedUTC = DateTime.UtcNow;
+        _weight.CreatedUTC = DateTime.UtcNow;
+
+        _client.Metrics = new List<Metric>
+        {
+            _height,
+            _weight,
+            _bmi
+        };
+
+        _client.TrainerProfileId = TrainerId;
+        _client.CreatedUTC = DateTime.UtcNow;
+
+        var result = await HttpClient.PostAsJsonAsync("api/clients", _client);
+        if (result.IsSuccessStatusCode)
+        {
+            Snackbar.Add("Client added successfully", Severity.Success);
+            MudDialog.Close(DialogResult.Ok(true));
+        }
+        else
+        {
+            Snackbar.Add("Error in adding client, please try again", Severity.Error);
+        }
+    }
+
+}

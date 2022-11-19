@@ -29,6 +29,18 @@
         <MudSpacer/>
         <MudNavMenu>
             <MudNavLink Icon="@Icons.Filled.Settings" OnClick="ShowSettingsDialog">Settings</MudNavLink>
+            <AuthorizeView>
+                <Authorized>
+                    <MudMenu AnchorOrigin="Origin.TopRight" Class="ml-2 mb-4">
+                        <ActivatorContent>
+                            <MudAvatar Color="Color.Tertiary">@context.User.Identity?.Name[0]</MudAvatar>
+                        </ActivatorContent>
+                        <ChildContent>
+                            <MudMenuItem OnClick="BeginSignOut">Log out</MudMenuItem>
+                        </ChildContent>
+                    </MudMenu>
+                </Authorized>
+            </AuthorizeView>
         </MudNavMenu>
     </MudDrawer>
     <MudMainContent Class="pt-4">

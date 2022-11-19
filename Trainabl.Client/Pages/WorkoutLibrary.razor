@@ -5,27 +5,23 @@
 @using Trainabl.Shared.Models
 @using Blazored.LocalStorage
 
-<MudTable ServerData="@(new Func<TableState, Task<TableData<Workout>>>(ServerReload))" Hover="true" @ref="_table" Bordered="true">
+<MudTable ServerData="@(new Func<TableState, Task<TableData<WorkoutDTO>>>(ServerReload))" Hover="true" @ref="_table" Bordered="true">
     <ToolBarContent >
         <MudText Typo="Typo.h6">Workouts</MudText>
         <MudSpacer/>
         <MudTextField T="string" ValueChanged="@(OnSearch)" Placeholder="Search" Adornment="Adornment.Start"
                       AdornmentIcon="@Icons.Filled.Search" IconSize="Size.Medium" Class="mr-2 mt-0"/>
-        <MudButton Href="NewWorkout" StartIcon="@Icons.Filled.Add" Variant="Variant.Filled" Color="Color.Primary" Class="mt-3">Add</MudButton>
+        <MudButton Href="NewWorkoutDTO" StartIcon="@Icons.Filled.Add" Variant="Variant.Filled" Color="Color.Primary" Class="mt-3">Add</MudButton>
     </ToolBarContent>
     <HeaderContent>
-        <MudTh><MudTableSortLabel SortLabel="name_field" T="Workout">Name</MudTableSortLabel></MudTh>
-        <MudTh><MudTableSortLabel SortLabel="template_field" T="Workout">Template?</MudTableSortLabel></MudTh>
-        <MudTh><MudTableSortLabel SortLabel="client_field" T="Workout">Client</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortLabel="name_field" T="WorkoutDTO">Name</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortLabel="template_field" T="WorkoutDTO">Template?</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel T="WorkoutDTO">Client</MudTableSortLabel></MudTh>
     </HeaderContent>
     <RowTemplate>
         <MudTd DataLabel="Name">@context.Name</MudTd>
         <MudTd DataLabel="IsTemplate">@context.IsTemplate</MudTd>
         <MudTd DataLabel="Client">
-            @if (context.ClientProfile != null)
-            {
-                @context.ClientProfile.Name
-            }
         </MudTd>
     </RowTemplate>
     <NoRecordsContent>
@@ -40,8 +36,8 @@
 </MudTable>
 
 @code {
-    private IEnumerable<Workout> _pagedData;
-    private MudTable<Workout> _table;
+    private IEnumerable<WorkoutDTO> _pagedData;
+    private MudTable<WorkoutDTO> _table;
     private Guid _trainerId;
 
     private int _totalItems;
@@ -51,16 +47,17 @@
     {
         var trainerProfile = await LocalStorageService.GetItemAsync<TrainerProfile>("trainerProfile");
         _trainerId = trainerProfile.Id;
+        Console.WriteLine($"App: Trainer ID {_trainerId}");
+        await _table.ReloadServerData();
         await base.OnInitializedAsync();
     }
 
-    private async Task<TableData<Workout>> ServerReload(TableState state)
+    private async Task<TableData<WorkoutDTO>> ServerReload(TableState state)
     {
-        IEnumerable<Workout> data = await HttpClient.GetFromJsonAsync<List<Workout>>($"api/Trainers/{_trainerId}/workouts");
+        IEnumerable<WorkoutDTO> data = await HttpClient.GetFromJsonAsync<List<WorkoutDTO>>($"api/Trainers/{_trainerId}/workouts");
 
-        data = data.Where(x => string.IsNullOrWhiteSpace(_searchString) 
-                               || x.Name.Contains(_searchString, StringComparison.OrdinalIgnoreCase) 
-                               || (x.ClientProfile is not null && x.ClientProfile.Name.Contains(_searchString)));
+        data = data.Where(x => string.IsNullOrWhiteSpace(_searchString)
+                               || x.Name.Contains(_searchString, StringComparison.OrdinalIgnoreCase));
 
         _totalItems = data.Count();
 
@@ -68,12 +65,11 @@
         {
             "name_field"     => data.OrderByDirection(state.SortDirection, x => x.Name),
             "template_field" => data.OrderByDirection(state.SortDirection, x => x.IsTemplate),
-            "client_field"   => data.OrderByDirection(state.SortDirection, x => x.ClientProfile?.Name ?? ""),
             _                => data
         };
 
         _pagedData = data.Skip(state.Page * state.PageSize).Take(state.PageSize).ToArray();
-        return new TableData<Workout>() { TotalItems = _totalItems, Items = _pagedData };
+        return new TableData<WorkoutDTO>() { TotalItems = _totalItems, Items = _pagedData };
     }
 
     private void OnSearch(string str)

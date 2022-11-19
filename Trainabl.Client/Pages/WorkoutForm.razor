@@ -8,7 +8,7 @@
     <MudCardContent>
         <div class="gap-4 d-flex">
             <MudTextField T="string" Margin="Margin.Dense" @bind-Value="Workout.Name" Label="Workout Name"/>
-            <MudButton Class="flex-grow-0" Color="Color.Primary" Variant="Variant.Filled" OnClick="async () => await Save(true)">Save as Draft</MudButton>
+            <MudButton Class="flex-grow-0" Color="Color.Secondary" Variant="Variant.Filled" OnClick="async () => await Save(true)">Save as Draft</MudButton>
             <MudButton Class="flex-grow-0" Color="Color.Primary" Variant="Variant.Filled" OnClick="async () => await Save()">Save as Complete</MudButton>
         </div>
         <div class="d-inline-flex align-center gap-4">

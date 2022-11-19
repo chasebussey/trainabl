@@ -1,0 +1,78 @@
+@using Trainabl.Shared.Models
+@using Blazored.LocalStorage
+@inject HttpClient HttpClient
+@inject NavigationManager NavigationManager
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+@inject ILocalStorageService LocalStorageService
+
+<MudCard>
+    <MudCardHeader>
+        <CardHeaderContent>
+            <MudText Typo="Typo.h6">Clients</MudText>
+        </CardHeaderContent>
+        <CardHeaderActions>
+            <MudButton StartIcon="@Icons.Filled.Add" Color="Color.Primary" OnClick="ShowNewClient">New Client</MudButton>
+        </CardHeaderActions>
+    </MudCardHeader>
+    <MudCardContent>
+        <MudTable Items="_clients" Hover="true" Loading="!_initialized" LoadingProgressColor="Color.Primary">
+            <HeaderContent>
+                <MudTh>
+                    <MudTableSortLabel SortBy="SortByName">Name</MudTableSortLabel>
+                </MudTh>
+                <MudTh>Actions</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="Name">@context.Name</MudTd>
+                <MudTd DataLabel="Actions">
+                    <MudIconButton Color="Color.Info" Icon="@Icons.Filled.Edit"/>
+                </MudTd>
+            </RowTemplate>
+        </MudTable>
+    </MudCardContent>
+</MudCard>
+
+@code {
+    private bool _initialized;
+    private List<ClientProfileDTO> _clients = new List<ClientProfileDTO>();
+    private Guid _trainerId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var trainerProfile = await LocalStorageService.GetItemAsync<TrainerProfile>("trainerProfile");
+        _trainerId = trainerProfile.Id;
+        await ReloadClients();
+        _initialized = true;
+        await base.OnInitializedAsync();
+    }
+
+    private async Task ReloadClients()
+    {
+        try
+        {
+            _clients = await HttpClient.GetFromJsonAsync<List<ClientProfileDTO>>($"api/Trainers/{_trainerId}/clients");
+        }
+        catch (Exception e)
+        {
+            Snackbar.Add("No clients found", Severity.Info);
+        }
+    }
+
+    private void OpenDetails(Guid clientId) { }
+
+    private async Task ShowNewClient()
+    {
+        var parameters = new DialogParameters() { ["TrainerId"] = _trainerId };
+        var dialog = DialogService.Show<NewClientForm>("New Client", parameters);
+        var result = await dialog.Result;
+
+        if (!result.Cancelled)
+        {
+            await ReloadClients();
+        }
+    }
+
+    private Func<ClientProfileDTO, object> SortByName => x => x.Name;
+
+}

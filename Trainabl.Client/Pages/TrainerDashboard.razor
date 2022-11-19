@@ -1,5 +1,4 @@
 @page "/TrainerDashboard"
-@using Trainabl.Shared.Models
 @using Blazored.LocalStorage
 @inject HttpClient HttpClient
 @inject NavigationManager NavigationManager
@@ -8,71 +7,9 @@
 @inject ILocalStorageService LocalStorageService
 @attribute [Authorize(Roles = "Trainer")]
 
-@if (!_initialized)
-{
-    <Loading/>
-}
-else
-{
-    <MudText Typo="Typo.h5" Class="mb-4">Trainer Dashboard</MudText>
-    
-    <MudCard>
-        <MudCardHeader>
-            <CardHeaderContent>
-                <MudText Typo="Typo.h6">Clients</MudText>
-            </CardHeaderContent>
-            <CardHeaderActions>
-                <MudButton StartIcon="@Icons.Filled.Add" Color="Color.Primary" OnClick="ShowNewClient">New Client</MudButton>
-            </CardHeaderActions>
-        </MudCardHeader>
-        <MudCardContent>
-            <MudList Clickable="true">
-                @foreach (var client in _clients)
-                {
-                    <MudListItem OnClick="() => OpenDetails(client.Id)">@client.Name</MudListItem>
-                }
-            </MudList>
-        </MudCardContent>
-    </MudCard>
-}
+<MudText Typo="Typo.h5" Class="mb-4">Trainer Dashboard</MudText>
+<ClientList/>
+
 
 @code {
-    private List<ClientProfile> _clients;
-    private bool _initialized;
-    private Guid _trainerId;
-
-    protected override async Task OnInitializedAsync()
-    {
-        var trainerProfile = await LocalStorageService.GetItemAsync<TrainerProfile>("trainerProfile");
-        _trainerId = trainerProfile.Id;
-        await ReloadClients();
-        _initialized = true;
-        await base.OnInitializedAsync();
-    }
-
-    private async Task ReloadClients()
-    {
-        try
-        {
-            _clients = await HttpClient.GetFromJsonAsync<List<ClientProfile>>($"api/Trainers/{_trainerId}/clients");
-        }
-        catch (Exception e)
-        {
-            Snackbar.Add("No clients found", Severity.Info);
-        }
-    }
-
-    private void OpenDetails(Guid clientId) { }
-
-    private async Task ShowNewClient()
-    {
-        var parameters = new DialogParameters() { ["TrainerId"] = _trainerId };
-        var dialog = DialogService.Show<NewClientForm>("New Client", parameters);
-        var result = await dialog.Result;
-
-        if (!result.Cancelled)
-        {
-            await ReloadClients();
-        }
-    }
 }

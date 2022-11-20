@@ -55,6 +55,24 @@ public class TrainersController : ControllerBase
 		return clients;
 	}
 
+	[HttpGet("{trainerId:guid}/clients/{clientId:guid}")]
+	public async Task<IActionResult> GetClientByTrainerAndId(Guid trainerId, Guid clientId)
+	{
+		var client = await _context.ClientProfiles.FindAsync(clientId);
+		
+		if (client is null)
+		{
+			return NotFound();
+		}
+
+		if (client.TrainerProfileId != trainerId)
+		{
+			return Forbid();
+		}
+
+		return Ok(ClientProfile.ClientProfileToDto(client));
+	}
+
 	[HttpGet("{trainerId:guid}/settings")]
 	public async Task<UserSettings?> GetUserSettingForTrainer(Guid trainerId)
 	{

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Trainabl.Server;
 
@@ -11,9 +12,10 @@ using Trainabl.Server;
 namespace Trainabl.Server.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    partial class ApplicationContextModelSnapshot : ModelSnapshot
+    [Migration("20221119185619_AddUnitToMetrics")]
+    partial class AddUnitToMetrics
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -51,7 +53,7 @@ namespace Trainabl.Server.Migrations
 
                     b.HasIndex("UserSettingsId");
 
-                    b.ToTable("ClientProfiles", (string)null);
+                    b.ToTable("ClientProfiles");
                 });
 
             modelBuilder.Entity("Trainabl.Shared.Models.Metric", b =>
@@ -81,7 +83,7 @@ namespace Trainabl.Server.Migrations
 
                     b.HasIndex("ClientProfileId");
 
-                    b.ToTable("Metrics", (string)null);
+                    b.ToTable("Metrics");
                 });
 
             modelBuilder.Entity("Trainabl.Shared.Models.Movement", b =>
@@ -103,7 +105,7 @@ namespace Trainabl.Server.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Movements", (string)null);
+                    b.ToTable("Movements");
                 });
 
             modelBuilder.Entity("Trainabl.Shared.Models.TrainerProfile", b =>
@@ -127,7 +129,7 @@ namespace Trainabl.Server.Migrations
 
                     b.HasIndex("UserSettingsId");
 
-                    b.ToTable("TrainerProfiles", (string)null);
+                    b.ToTable("TrainerProfiles");
                 });
 
             modelBuilder.Entity("Trainabl.Shared.Models.UserSettings", b =>
@@ -147,7 +149,7 @@ namespace Trainabl.Server.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("UserSettings", (string)null);
+                    b.ToTable("UserSettings");
                 });
 
             modelBuilder.Entity("Trainabl.Shared.Models.Workout", b =>
@@ -190,7 +192,7 @@ namespace Trainabl.Server.Migrations
 
                     b.HasIndex("TrainerProfileId");
 
-                    b.ToTable("Workouts", (string)null);
+                    b.ToTable("Workouts");
                 });
 
             modelBuilder.Entity("Trainabl.Shared.Models.ClientProfile", b =>

@@ -23,7 +23,6 @@ public partial class WorkoutForm
 
 	protected override async Task OnParametersSetAsync()
 	{
-		Console.WriteLine("App: OnParametersSetAsync");
 		Workout ??= new WorkoutDTO()
 		{
 			Exercises = new List<Exercise>
@@ -41,7 +40,6 @@ public partial class WorkoutForm
 		Workout.TrainerProfileId = _trainerId;
 		
 		await base.OnParametersSetAsync();
-		Console.WriteLine("App: /OnParametersSetAsync");
 	}
 
 	private void AddExercise()

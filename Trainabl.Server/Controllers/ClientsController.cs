@@ -15,6 +15,19 @@ public class ClientsController : ControllerBase
 		_context = context;
 	}
 
+	[HttpGet("{clientId:guid}/latestmetrics")]
+	public async Task<IEnumerable<Metric>> GetLatestMetrics(Guid clientId)
+	{
+		var metrics     = await _context.Metrics.Where(x => x.ClientProfileId == clientId).ToListAsync();
+		var metricNames = metrics.DistinctBy(x => x.Name).Select(x => x.Name);
+		List<Metric> latestMetrics = metricNames.Select(metricName => metrics.Where(x => x.Name == metricName)
+			                                                      .OrderByDescending(x => x.CreatedUTC)
+			                                                      .First())
+		                                              .ToList();
+
+		return latestMetrics;
+	}
+
 	[HttpPost]
 	public async Task<IActionResult> CreateClient(ClientProfileDTO clientDto)
 	{

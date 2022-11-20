@@ -1,0 +1,56 @@
+@using Trainabl.Shared.Models
+@inject HttpClient HttpClient
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <DialogContent>
+    <MudForm>
+        <MudTextField T="string" @bind-Value="Metric.Name" Label="Name" Disabled="@(!IsNewMetric)"/>
+        <MudNumericField T="double" @bind-Value="Metric.Value" Label="Value"/>
+        <MudTextField T="string" @bind-Value="Metric.Unit" Label="Unit" Disabled="@(!IsNewMetric)"/>
+    </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Save">Save</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [Parameter]
+    public Metric? Metric { get; set; }
+    [Parameter]
+    public bool IsNewMetric { get; set; }
+    [Parameter]
+    public Guid ClientId { get; set; }
+    
+    [CascadingParameter] protected MudDialogInstance Dialog { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        Metric ??= new Metric();
+        await base.OnParametersSetAsync();
+    }
+
+    private void Cancel() => Dialog.Cancel();
+
+    private async Task Save()
+    {
+        if (Metric != null)
+        {
+            Metric.CreatedUTC = DateTime.Now;
+            Metric.ClientProfileId = ClientId;
+
+            var result = await HttpClient.PostAsJsonAsync("api/metrics", Metric);
+
+            if (result.IsSuccessStatusCode)
+            {
+                Dialog.Close(DialogResult.Ok(true));
+            }
+            else
+            {
+                Snackbar.Add("Error saving metric, please try again", Severity.Error);
+            }
+        }
+    }
+}

@@ -47,7 +47,6 @@
     {
         var trainerProfile = await LocalStorageService.GetItemAsync<TrainerProfile>("trainerProfile");
         _trainerId = trainerProfile.Id;
-        Console.WriteLine($"App: Trainer ID {_trainerId}");
         await _table.ReloadServerData();
         await base.OnInitializedAsync();
     }

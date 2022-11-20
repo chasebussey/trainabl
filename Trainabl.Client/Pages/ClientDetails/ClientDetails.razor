@@ -1,0 +1,30 @@
+@page "/ClientDetails/{ClientId:guid}"
+<CascadingValue Value="ClientId">
+    @if (!_initialized)
+    {
+        <Loading/>
+    }
+    else
+    {
+        <MudText Typo="Typo.h5">Client Details</MudText>
+        <MudGrid Class="mt-4">
+            <MudItem md="6" xs="12">
+                <MudPaper Class="d-flex mud-width-max py-8 align-center justify-center">Charts placeholder</MudPaper>
+            </MudItem>
+            <MudItem md="6" xs="12">
+                <MudCard>
+                    <MudTabs ApplyEffectsToContainer="true">
+                        <MudTabPanel Text="Metrics">
+                            <MudCardContent>
+                                <MetricsList></MetricsList>
+                            </MudCardContent>
+                        </MudTabPanel>
+                    </MudTabs>
+                </MudCard>
+            </MudItem>
+            <MudItem md="12" xs="12">
+                <MudPaper Class="d-flex mud-width-max py-8 align-center justify-center">Workouts placeholder</MudPaper>
+            </MudItem>
+        </MudGrid>
+    }
+</CascadingValue>

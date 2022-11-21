@@ -1,0 +1,80 @@
+@using Trainabl.Shared.Models
+@inject HttpClient HttpClient
+
+<MudTable ServerData="@(new Func<TableState, Task<TableData<WorkoutDTO>>>(ServerReload))" Hover="true" @ref="_table"
+          Bordered="true" LoadingProgressColor="Color.Primary">
+    <ToolBarContent>
+        <MudSpacer/>
+        <MudTextField T="string" ValueChanged="@(OnSearch)" Placeholder="Search" Adornment="Adornment.Start"
+                      AdornmentIcon="@Icons.Filled.Search" Class="mr-2 mt-0"/>
+        <MudButton Href="@($"NewWorkout/{ClientId}")" StartIcon="@Icons.Filled.Add" Variant="Variant.Filled" Color="Color.Primary" Class="mt-3">Add</MudButton>
+    </ToolBarContent>
+    <HeaderContent>
+        <MudTh><MudTableSortLabel SortLabel="name_field" T="WorkoutDTO">Name</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortLabel="draft_field" T="WorkoutDTO">Draft?</MudTableSortLabel></MudTh>
+        <MudTh>Actions</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Name">@context.Name</MudTd>
+        <MudTd DataLabel="IsDraft">@context.IsDraft</MudTd>
+        <MudTd>
+            <MudIconButton Icon="@Icons.Filled.Edit" Color="Color.Primary" Href="@($"EditWorkout/{context.Id}")"/>
+            <MudIconButton Icon="@Icons.Filled.EditNote" Color="Color.Secondary"/>
+            <MudIconButton Icon="@Icons.Filled.Delete" Color="Color.Error"/>
+        </MudTd>
+    </RowTemplate>
+    <NoRecordsContent>
+        <MudText>No matching records found</MudText>
+    </NoRecordsContent>
+    <LoadingContent>
+        <MudProgressCircular Indeterminate="true"/>
+    </LoadingContent>
+    <PagerContent>
+        <MudTablePager/>
+    </PagerContent>
+</MudTable>
+
+@code {
+    [CascadingParameter]
+    public Guid ClientId { get; set; }
+    
+    private IEnumerable<WorkoutDTO> _pagedData;
+    private MudTable<WorkoutDTO> _table;
+    private Guid _trainerId;
+
+    private int _totalItems;
+    private string _searchString = null;
+
+    private async Task<TableData<WorkoutDTO>> ServerReload(TableState state)
+    {
+        try
+        {
+            IEnumerable<WorkoutDTO> data = await HttpClient.GetFromJsonAsync<List<WorkoutDTO>>($"api/Clients/{ClientId}/workouts");
+        data = data.Where(x => string.IsNullOrWhiteSpace(_searchString)
+                               || x.Name.Contains(_searchString, StringComparison.OrdinalIgnoreCase));
+
+        _totalItems = data.Count();
+
+        data = state.SortLabel switch
+        {
+            "name_field" => data.OrderByDirection(state.SortDirection, x => x.Name),
+            "draft_field" => data.OrderByDirection(state.SortDirection, x => x.IsDraft),
+            _ => data
+        };
+
+        _pagedData = data.Skip(state.Page * state.PageSize).Take(state.PageSize).ToArray();
+        }
+        catch (Exception e)
+        {
+            return new TableData<WorkoutDTO> { TotalItems = 0, Items = new List<WorkoutDTO>() };
+        }
+
+        return new TableData<WorkoutDTO> { TotalItems = _totalItems, Items = _pagedData };
+    }
+
+    private void OnSearch(string str)
+    {
+        _searchString = str;
+        _table.ReloadServerData();
+    }
+}

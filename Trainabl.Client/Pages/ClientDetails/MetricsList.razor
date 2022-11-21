@@ -6,43 +6,43 @@
 <div class="d-flex mud-width-max justify-end">
     <MudButton StartIcon="@Icons.Filled.Add" Color="Color.Primary" OnClick="() => ShowMetricForm(null)">Add Metric</MudButton>
 </div>
-<MudList Clickable="true" Dense="true">
-    <MudListSubheader>Basic Metrics</MudListSubheader>
-    @foreach (var metric in _metrics.Where(x => _basicMetricNames.Contains(x.Name)))
-    {
-        <MudListItem OnClick="() => ShowMetricForm(metric)">
-            <div class="d-inline-flex align-center" style="width:100%">
-                <MudText> @metric.Name: @metric.Value.ToString("N2") @metric.Unit</MudText>
-                <MudSpacer/>
-                <MudIconButton Color="Color.Primary" Icon="@Icons.Filled.PlaylistAdd" OnClick="() => ShowMetricForm(metric)"/>
-                <MudTooltip Text="Remove latest value" Arrow="true">
-                    <MudIconButton Color="Color.Secondary" Icon="@Icons.Filled.Undo"/>
-                </MudTooltip>
-                <MudTooltip Text="Delete metric and ALL values" Arrow="true">
-                    <MudIconButton Color="Color.Error" Icon="@Icons.Filled.Delete"/>
-                </MudTooltip>
-            </div>
-        </MudListItem>
-    }
-    <MudDivider/>
-    <MudListSubheader>Custom Metrics</MudListSubheader>
-    @foreach (var metric in _metrics.Where(x => !_basicMetricNames.Contains(x.Name)))
-    {
-        <MudListItem OnClick="() => ShowMetricForm(metric)">
-            <div class="d-inline-flex align-center" style="width:100%">
-                <MudText> @metric.Name: @metric.Value.ToString("N2") @metric.Unit</MudText>
-                <MudSpacer/>
-                <MudIconButton Color="Color.Primary" Icon="@Icons.Filled.PlaylistAdd" OnClick="() => ShowMetricForm(metric)"/>
-                <MudTooltip Text="Remove latest value" Arrow="true">
-                    <MudIconButton Color="Color.Secondary" Icon="@Icons.Filled.Undo"/>
-                </MudTooltip>
-                <MudTooltip Text="Delete metric and ALL values" Arrow="true">
-                    <MudIconButton Color="Color.Error" Icon="@Icons.Filled.Delete"/>
-                </MudTooltip>
-            </div>
-        </MudListItem>
-    }
-</MudList>
+    <MudList Clickable="true" Dense="true" Style="height: 40vh; overflow-y: auto">
+        <MudListSubheader>Basic Metrics</MudListSubheader>
+        @foreach (var metric in _metrics.Where(x => _basicMetricNames.Contains(x.Name)))
+        {
+            <MudListItem OnClick="() => ShowMetricForm(metric)">
+                <div class="d-inline-flex align-center" style="width:100%">
+                    <MudText> @metric.Name: @metric.Value.ToString("N2") @metric.Unit</MudText>
+                    <MudSpacer/>
+                    <MudIconButton Color="Color.Primary" Icon="@Icons.Filled.PlaylistAdd" OnClick="() => ShowMetricForm(metric)"/>
+                    <MudTooltip Text="Remove latest value" Arrow="true">
+                        <MudIconButton Color="Color.Secondary" Icon="@Icons.Filled.Undo"/>
+                    </MudTooltip>
+                    <MudTooltip Text="Delete metric and ALL values" Arrow="true">
+                        <MudIconButton Color="Color.Error" Icon="@Icons.Filled.Delete"/>
+                    </MudTooltip>
+                </div>
+            </MudListItem>
+        }
+        <MudDivider/>
+        <MudListSubheader>Custom Metrics</MudListSubheader>
+        @foreach (var metric in _metrics.Where(x => !_basicMetricNames.Contains(x.Name)))
+        {
+            <MudListItem OnClick="() => ShowMetricForm(metric)">
+                <div class="d-inline-flex align-center" style="width:100%">
+                    <MudText> @metric.Name: @metric.Value.ToString("N2") @metric.Unit</MudText>
+                    <MudSpacer/>
+                    <MudIconButton Color="Color.Primary" Icon="@Icons.Filled.PlaylistAdd" OnClick="() => ShowMetricForm(metric)"/>
+                    <MudTooltip Text="Remove latest value" Arrow="true">
+                        <MudIconButton Color="Color.Secondary" Icon="@Icons.Filled.Undo"/>
+                    </MudTooltip>
+                    <MudTooltip Text="Delete metric and ALL values" Arrow="true">
+                        <MudIconButton Color="Color.Error" Icon="@Icons.Filled.Delete"/>
+                    </MudTooltip>
+                </div>
+            </MudListItem>
+        }
+    </MudList>
 
 @code {
     [CascadingParameter] Guid ClientId { get; set; }
@@ -62,7 +62,7 @@
         await base.OnParametersSetAsync();
     }
 
-    async Task LoadMetrics()
+    private async Task LoadMetrics()
     {
         try
         {

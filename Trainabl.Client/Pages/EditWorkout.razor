@@ -1,0 +1,22 @@
+@page "/EditWorkout/{WorkoutId:guid}"
+@using Trainabl.Shared.Models
+@inject HttpClient HttpClient
+<WorkoutForm IsEdit="true" Workout="@_workout"></WorkoutForm>
+
+@code {
+    [Parameter] public Guid WorkoutId { get; set; }
+
+    private WorkoutDTO _workout;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        try
+        {
+            _workout = await HttpClient.GetFromJsonAsync<WorkoutDTO>($"api/Workouts/{WorkoutId}");
+        }
+        catch (Exception e)
+        {
+        }
+        await base.OnParametersSetAsync();
+    }
+}

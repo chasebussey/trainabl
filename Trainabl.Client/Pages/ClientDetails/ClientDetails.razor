@@ -16,14 +16,22 @@
                     <MudTabs ApplyEffectsToContainer="true">
                         <MudTabPanel Text="Metrics">
                             <MudCardContent>
-                                <MetricsList></MetricsList>
+                                <MetricsList/>
                             </MudCardContent>
                         </MudTabPanel>
                     </MudTabs>
                 </MudCard>
             </MudItem>
             <MudItem md="12" xs="12">
-                <MudPaper Class="d-flex mud-width-max py-8 align-center justify-center">Workouts placeholder</MudPaper>
+                <MudCard>
+                    <MudTabs>
+                        <MudTabPanel Text="Workouts">
+                            <MudCardContent>
+                                <WorkoutList/>
+                            </MudCardContent>
+                        </MudTabPanel>
+                    </MudTabs>
+                </MudCard>
             </MudItem>
         </MudGrid>
     }

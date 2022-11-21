@@ -12,6 +12,7 @@ public partial class WorkoutForm
 	[Parameter] public bool IsEdit { get; set; }
 
 	[Parameter] public WorkoutDTO? Workout { get; set; }
+	[Parameter] public Guid? ClientId { get; set; }
 
 	[Inject] private HttpClient HttpClient { get; set; }
 	[Inject] private ISnackbar Snackbar { get; set; }
@@ -62,9 +63,11 @@ public partial class WorkoutForm
 
 	private async Task Save(bool isDraft = false)
 	{
-		if (!isDraft)
+		Workout.IsDraft = isDraft;
+
+		if (ClientId is not null && ClientId != Guid.Empty)
 		{
-			Workout.IsDraft = false;
+			Workout.ClientProfileId = ClientId;
 		}
 
 		if (!IsEdit)
@@ -73,6 +76,18 @@ public partial class WorkoutForm
 			if (result.IsSuccessStatusCode)
 			{
 				Snackbar.Add("Workout saved!", Severity.Success);
+			}
+			else
+			{
+				Snackbar.Add("Error saving workout, try again.", Severity.Error);
+			}
+		}
+		else
+		{
+			var result = await HttpClient.PutAsJsonAsync($"api/workouts/{Workout.Id}", Workout);
+			if (result.IsSuccessStatusCode)
+			{
+				Snackbar.Add("Workout saved.", Severity.Success);
 			}
 			else
 			{

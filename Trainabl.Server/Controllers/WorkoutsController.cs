@@ -24,6 +24,18 @@ public class WorkoutsController : ControllerBase
 		return await _context.Workouts.Select(x => Workout.WorkoutToDto(x)).ToListAsync();
 	}
 
+	[HttpGet("{id:guid}")]
+	public async Task<ActionResult<WorkoutDTO>> GetWorkoutById(Guid id)
+	{
+		var workout = await _context.Workouts.FindAsync(id);
+		if (workout is null)
+		{
+			return NotFound();
+		}
+
+		return Ok(Workout.WorkoutToDto(workout));
+	}
+
 	#endregion
 	
 	#region Post
@@ -37,12 +49,49 @@ public class WorkoutsController : ControllerBase
 			_context.Workouts.Add(workout);
 
 			await _context.SaveChangesAsync();
-			return Created(workout.Id.ToString(), workout);
+			return Created(workout.Id.ToString(), Workout.WorkoutToDto(workout));
 		}
 		catch (Exception e)
 		{
 			return BadRequest();
 		}
 	}
+	#endregion
+
+	#region Put
+
+	[HttpPut("{workoutId:guid}")]
+	public async Task<IActionResult> UpdateWorkout(Guid workoutId, WorkoutDTO workoutDto)
+	{
+		var updatedWorkout = Workout.WorkoutFromDto(workoutDto);
+		var workout        = await _context.Workouts.FindAsync(workoutId);
+
+		if (workout is null)
+		{
+			return NotFound();
+		}
+
+		workout.Name             = updatedWorkout.Name;
+		workout.Exercises        = updatedWorkout.Exercises;
+		workout.IsTemplate       = updatedWorkout.IsTemplate;
+		workout.IsDraft          = updatedWorkout.IsDraft;
+		workout.Description      = updatedWorkout.Description;
+		workout.WorkoutType      = updatedWorkout.WorkoutType;
+		workout.TrainerProfileId = updatedWorkout.TrainerProfileId;
+		workout.ClientProfileId  = updatedWorkout.ClientProfileId;
+
+		try
+		{
+			await _context.SaveChangesAsync();
+		}
+		catch (DbUpdateConcurrencyException) when (!_context.Workouts.Any(x => x.Id == workoutId))
+		{
+			return NotFound();
+		}
+
+		return NoContent();
+	}
+	
+
 	#endregion
 }

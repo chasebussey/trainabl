@@ -1,5 +1,6 @@
-@page "/NewWorkout"
-<WorkoutForm IsEdit="false"></WorkoutForm>
+@page "/NewWorkout/{ClientId:guid?}"
+<WorkoutForm IsEdit="false" ClientId="@ClientId"></WorkoutForm>
+
 @code {
-    
+    [Parameter] public Guid? ClientId { get; set; }
 }

@@ -28,6 +28,15 @@ public class ClientsController : ControllerBase
 		return latestMetrics;
 	}
 
+	[HttpGet("{clientId:guid}/workouts")]
+	public async Task<IEnumerable<WorkoutDTO>> GetWorkoutsByClient(Guid clientId)
+	{
+		List<WorkoutDTO> workouts = await _context.Workouts.Where(x => x.ClientProfileId == clientId)
+		                                          .Select(x => Workout.WorkoutToDto(x))
+		                                          .ToListAsync();
+		return workouts;
+	}
+
 	[HttpPost]
 	public async Task<IActionResult> CreateClient(ClientProfileDTO clientDto)
 	{

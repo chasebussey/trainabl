@@ -7,7 +7,7 @@ public class Workout
 	public string Name { get; set; }
 	public List<Exercise> Exercises { get; set; }
 	public bool IsTemplate { get; set; }
-	public bool IsDraft { get; set; } = true;
+	public bool IsDraft { get; set; }
 	public string? Description { get; set; }
 	public WorkoutType WorkoutType { get; set; }
 	
@@ -23,6 +23,7 @@ public class Workout
 	public static Workout WorkoutFromDto(WorkoutDTO dto) =>
 		new()
 		{
+			Id               = dto.Id,
 			Name             = dto.Name,
 			Exercises        = dto.Exercises,
 			IsTemplate       = dto.IsTemplate,
@@ -34,8 +35,9 @@ public class Workout
 		};
 
 	public static WorkoutDTO WorkoutToDto(Workout workout) =>
-		new WorkoutDTO
+		new()
 		{
+			Id               = workout.Id,
 			Name             = workout.Name,
 			Exercises        = workout.Exercises,
 			IsTemplate       = workout.IsTemplate,

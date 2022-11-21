@@ -2,6 +2,7 @@ namespace Trainabl.Shared.Models;
 
 public class ClientProfileDTO
 {
+	public Guid Id { get; set; }
 	public Guid TrainerProfileId { get; set; }
 
 	public string Name { get; set; }

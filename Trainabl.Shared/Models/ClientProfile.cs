@@ -20,6 +20,7 @@ public class ClientProfile
 	public static ClientProfileDTO ClientProfileToDto(ClientProfile client) =>
 		new()
 		{
+			Id               = client.Id,
 			TrainerProfileId = client.TrainerProfileId,
 			Name             = client.Name,
 			Email            = client.Email,
@@ -30,6 +31,7 @@ public class ClientProfile
 	public static ClientProfile ClientProfileFromDto(ClientProfileDTO dto) =>
 		new()
 		{
+			Id               = dto.Id,
 			TrainerProfileId = dto.TrainerProfileId,
 			Name             = dto.Name,
 			Email            = dto.Email,

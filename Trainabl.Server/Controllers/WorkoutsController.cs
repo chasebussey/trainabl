@@ -36,6 +36,14 @@ public class WorkoutsController : ControllerBase
 		return Ok(Workout.WorkoutToDto(workout));
 	}
 
+	[HttpGet("templates")]
+	public async Task<IEnumerable<WorkoutDTO>> GetWorkoutTemplates()
+	{
+		return await _context.Workouts.Where(x => x.IsTemplate)
+		                     .Select(x => Workout.WorkoutToDto(x))
+		                     .ToListAsync();
+	}
+
 	#endregion
 	
 	#region Post

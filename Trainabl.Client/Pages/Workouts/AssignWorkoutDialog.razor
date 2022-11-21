@@ -1,0 +1,54 @@
+@using Trainabl.Shared.Models
+@inject HttpClient HttpClient
+@inject NavigationManager NavigationManager
+@inject ISnackbar Snackbar
+<MudDialog>
+    <DialogContent>
+        <MudAutocomplete T="WorkoutDTO" Label="Template" @bind-Value="@_workout" SearchFunc="Search" 
+                         ResetValueOnEmptyText="true" CoerceText="true" CoerceValue="false" 
+                         ToStringFunc="@(w => $"{w.Name}")"/>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Assign">Assign</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] public MudDialogInstance Dialog { get; set; }
+    [Parameter] public Guid ClientId { get; set; }
+    
+    private WorkoutDTO _workout;
+    List<WorkoutDTO> _workouts;
+
+    private async Task<IEnumerable<WorkoutDTO>> Search(string value)
+    {
+        _workouts = await HttpClient.GetFromJsonAsync<List<WorkoutDTO>>("api/workouts/templates");
+
+        return string.IsNullOrEmpty(value) ? _workouts : _workouts.Where(x => x.Name.Contains(value, StringComparison.OrdinalIgnoreCase));
+    } 
+    
+    private void Cancel() => Dialog.Cancel();
+
+    private async Task Assign()
+    {
+        var assignedWorkout = _workout;
+        assignedWorkout.Id = Guid.Empty;
+        assignedWorkout.IsTemplate = false;
+        assignedWorkout.ClientProfileId = ClientId;
+
+        var result = await HttpClient.PostAsJsonAsync("api/workouts", assignedWorkout);
+
+        if (result.IsSuccessStatusCode)
+        {
+            Snackbar.Add("Workout assigned", Severity.Success);
+            var id = result.Headers.Location.ToString();
+            NavigationManager.NavigateTo($"EditWorkout/{id}");
+            //Dialog.Close(DialogResult.Ok(true));
+        }
+        else
+        {
+            Snackbar.Add("Error in workout assignment", Severity.Error);
+        }
+    }
+}

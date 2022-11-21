@@ -1,5 +1,7 @@
 @using Trainabl.Shared.Models
+@using Trainabl.Client.Pages.Workouts
 @inject HttpClient HttpClient
+@inject IDialogService DialogService
 
 <MudTable ServerData="@(new Func<TableState, Task<TableData<WorkoutDTO>>>(ServerReload))" Hover="true" @ref="_table"
           Bordered="true" LoadingProgressColor="Color.Primary">
@@ -7,6 +9,7 @@
         <MudSpacer/>
         <MudTextField T="string" ValueChanged="@(OnSearch)" Placeholder="Search" Adornment="Adornment.Start"
                       AdornmentIcon="@Icons.Filled.Search" Class="mr-2 mt-0"/>
+        <MudButton Color="Color.Secondary" Variant="Variant.Filled" Class="mt-3 mr-2" OnClick="ShowAssignWorkoutDialog">Assign a Template</MudButton>
         <MudButton Href="@($"NewWorkout/{ClientId}")" StartIcon="@Icons.Filled.Add" Variant="Variant.Filled" Color="Color.Primary" Class="mt-3">Add</MudButton>
     </ToolBarContent>
     <HeaderContent>
@@ -76,5 +79,12 @@
     {
         _searchString = str;
         _table.ReloadServerData();
+    }
+
+    private void ShowAssignWorkoutDialog()
+    {
+        var options = new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true };
+        var parameters = new DialogParameters { ["ClientId"] = ClientId };
+        DialogService.Show<AssignWorkoutDialog>("Assign a Template", parameters, options);
     }
 }

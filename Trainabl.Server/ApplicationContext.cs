@@ -19,6 +19,7 @@ public class ApplicationContext : DbContext
 	public DbSet<Metric> Metrics { get; set; }
 	
 	public DbSet<UserSettings> UserSettings { get; set; }
+	public DbSet<WorkoutNote> WorkoutNotes { get; set; }
 
 	protected override void OnModelCreating(ModelBuilder builder)
 	{
@@ -32,5 +33,16 @@ public class ApplicationContext : DbContext
 			            e => JsonSerializer.Serialize(e, (JsonSerializerOptions)null),
 			            e => JsonSerializer.Deserialize<List<Exercise>>(e, (JsonSerializerOptions)null)
 		            );
+
+		builder.Entity<Workout>()
+		       .Navigation(x => x.WorkoutNotes)
+		       .AutoInclude();
+
+		builder.Entity<WorkoutNote>()
+		       .Property(x => x.ExerciseNotes)
+		       .HasConversion(
+			       x => JsonSerializer.Serialize(x, (JsonSerializerOptions)null),
+			       x => JsonSerializer.Deserialize<List<ExerciseNote>>(x, (JsonSerializerOptions)null)
+		       );
 	}
 }

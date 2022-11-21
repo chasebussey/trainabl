@@ -9,6 +9,7 @@ public class WorkoutDTO
 	public bool IsDraft { get; set; }
 	public string? Description { get; set; }
 	public WorkoutType WorkoutType { get; set; }
+	public WorkoutNote LatestNote { get; set; }
 	
 	public Guid TrainerProfileId { get; set; }
 	public Guid? ClientProfileId { get; set; }

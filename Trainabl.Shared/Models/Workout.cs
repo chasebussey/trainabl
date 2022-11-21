@@ -17,9 +17,9 @@ public class Workout
 	public TrainerProfile TrainerProfile { get; set; }
 	public ClientProfile? ClientProfile { get; set; }
 	
-	// TODO: Implement WorkoutNotes
-	// public List<WorkoutNote>? WorkoutNotes { get; set; }
+	public List<WorkoutNote>? WorkoutNotes { get; set; }
 
+	// WorkoutFromDto doesn't assign LatestNote, that'll have to be handled by the controller
 	public static Workout WorkoutFromDto(WorkoutDTO dto) =>
 		new()
 		{
@@ -31,7 +31,7 @@ public class Workout
 			Description      = dto.Description,
 			WorkoutType      = dto.WorkoutType,
 			TrainerProfileId = dto.TrainerProfileId,
-			ClientProfileId  = dto.ClientProfileId
+			ClientProfileId  = dto.ClientProfileId,
 		};
 
 	public static WorkoutDTO WorkoutToDto(Workout workout) =>
@@ -45,7 +45,8 @@ public class Workout
 			Description      = workout.Description,
 			WorkoutType      = workout.WorkoutType,
 			TrainerProfileId = workout.TrainerProfileId,
-			ClientProfileId  = workout.ClientProfileId
+			ClientProfileId  = workout.ClientProfileId,
+			LatestNote       = workout.WorkoutNotes.OrderByDescending(x => x.CreatedDateUTC).First()
 		};
 }
 

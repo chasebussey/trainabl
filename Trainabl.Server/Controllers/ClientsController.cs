@@ -15,6 +15,8 @@ public class ClientsController : ControllerBase
 		_context = context;
 	}
 
+	#region Get
+	
 	[HttpGet("{clientId:guid}/latestmetrics")]
 	public async Task<IEnumerable<Metric>> GetLatestMetrics(Guid clientId)
 	{
@@ -37,6 +39,32 @@ public class ClientsController : ControllerBase
 		return workouts;
 	}
 
+	[HttpGet("{clientId:guid}/workoutnotes")]
+	public async Task<ActionResult<IEnumerable<WorkoutNote>>> GetAllWorkoutNotesForClient(Guid clientId)
+	{
+		List<WorkoutNote> notes = await _context.Workouts.Where(x => x.ClientProfileId == clientId)
+		                                        .Where(x => x.WorkoutNotes != null && x.WorkoutNotes.Count > 0)
+		                                        .SelectMany(x => x.WorkoutNotes)
+		                                        .ToListAsync();
+
+		return Ok(notes);
+	}
+
+	[HttpGet("{clientId:guid}/latestworkoutnotes")]
+	public async Task<ActionResult<IEnumerable<WorkoutNote>>> GetLatestWorkoutNotesForClient(Guid clientId)
+	{
+		List<WorkoutNote> notes = await _context.Workouts.Where(x => x.ClientProfileId == clientId)
+		                                        .Where(x => x.WorkoutNotes != null && x.WorkoutNotes.Count > 0)
+		                                        .Select(x => x.WorkoutNotes.MaxBy(y => y.CreatedDateUTC))
+		                                        .ToListAsync();
+
+		return Ok(notes);
+	}
+	
+	#endregion
+
+	#region Post
+	
 	[HttpPost]
 	public async Task<IActionResult> CreateClient(ClientProfileDTO clientDto)
 	{
@@ -64,4 +92,28 @@ public class ClientsController : ControllerBase
 			return UnprocessableEntity();
 		}
 	}
+	
+	#endregion
+	
+	#region Delete
+
+	[HttpDelete("{clientId:guid}/workoutnotes")]
+	public async Task<IActionResult> DeleteAllWorkoutNotesForClient(Guid clientId)
+	{
+		var workouts = await _context.Workouts.Where(x => x.ClientProfileId == clientId).ToListAsync();
+
+		workouts.ForEach(x => x.WorkoutNotes.Clear());
+
+		try
+		{
+			await _context.SaveChangesAsync();
+			return Ok();
+		}
+		catch (Exception e)
+		{
+			return UnprocessableEntity();
+		}
+	}
+	
+	#endregion
 }

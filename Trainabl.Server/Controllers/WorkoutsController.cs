@@ -95,6 +95,8 @@ public class WorkoutsController : ControllerBase
 		try
 		{
 			var workout = await _context.Workouts.FindAsync(workoutId);
+			workoutNote.CreatedDateUTC = DateTime.UtcNow;
+			
 			workout.WorkoutNotes.Add(workoutNote);
 
 			await _context.SaveChangesAsync();

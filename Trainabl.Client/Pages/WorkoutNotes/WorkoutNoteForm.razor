@@ -1,0 +1,80 @@
+@using Trainabl.Shared.Models
+@inject HttpClient HttpClient
+@inject ISnackbar Snackbar
+@inject NavigationManager NavigationManager
+
+@if (!_initialized)
+{
+    <Loading/>
+}
+else
+{
+    <MudCard>
+        <MudCardHeader>
+            <CardHeaderContent>
+                <MudText Typo="Typo.h6">@_workout.Name Notes</MudText>
+            </CardHeaderContent>
+        </MudCardHeader>
+        <MudCardContent>
+            @foreach (var exNote in WorkoutNote.ExerciseNotes)
+            {
+                <MudTextField T="string" @bind-Value="@exNote.Note" Lines="4" Label="@exNote.Exercise.MovementName" Immediate="true"/>
+            }
+        </MudCardContent>
+        <MudCardActions>
+            <MudSpacer/>
+            <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Save">Save</MudButton>
+        </MudCardActions>
+    </MudCard>
+}
+
+@code {
+    [Parameter] public Guid WorkoutId { get; set; }
+    [Parameter] public WorkoutNote? WorkoutNote { get; set; }
+    [Parameter] public bool IsEdit { get; set; }
+
+    private WorkoutDTO _workout;
+    private bool _initialized;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _workout = await HttpClient.GetFromJsonAsync<WorkoutDTO>($"api/workouts/{WorkoutId}");
+        
+        Console.WriteLine("App: WorkoutNoteForm OPSA");
+        WorkoutNote ??= new WorkoutNote();
+
+        InitializeNote();
+        
+        await base.OnParametersSetAsync();
+        _initialized = true;
+    }
+
+    private void InitializeNote()
+    {
+        // this is not sufficient to ensure ExerciseNotes matches _workouts.Exercises, but it'll get us started
+        if (WorkoutNote.ExerciseNotes is not null && WorkoutNote.ExerciseNotes.Count != 0) return;
+        WorkoutNote.ExerciseNotes = new List<ExerciseNote>();
+        foreach (var ex in _workout.Exercises)
+        {
+            WorkoutNote.ExerciseNotes.Add(new ExerciseNote
+            {
+                Exercise = ex,
+                Note = ""
+            });
+        }
+    }
+
+    private async Task Save()
+    {
+        var result = await HttpClient.PostAsJsonAsync($"api/workouts/{WorkoutId}/workoutnotes", WorkoutNote);
+        if (result.IsSuccessStatusCode)
+        {
+            Snackbar.Add("Note saved.", Severity.Success);
+            NavigationManager.NavigateTo($"ClientDetails/{_workout.ClientProfileId}");
+        }
+        else
+        {
+            Snackbar.Add("Error saving note.", Severity.Error);
+        }
+    }
+}

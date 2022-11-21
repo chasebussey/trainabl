@@ -34,8 +34,9 @@ public class Workout
 			ClientProfileId  = dto.ClientProfileId,
 		};
 
-	public static WorkoutDTO WorkoutToDto(Workout workout) =>
-		new()
+	public static WorkoutDTO WorkoutToDto(Workout workout)
+	{
+		var dto = new WorkoutDTO
 		{
 			Id               = workout.Id,
 			Name             = workout.Name,
@@ -46,8 +47,15 @@ public class Workout
 			WorkoutType      = workout.WorkoutType,
 			TrainerProfileId = workout.TrainerProfileId,
 			ClientProfileId  = workout.ClientProfileId,
-			LatestNote       = workout.WorkoutNotes.OrderByDescending(x => x.CreatedDateUTC).First()
 		};
+
+		if (workout.WorkoutNotes is not null && workout.WorkoutNotes.Count > 0)
+		{
+			dto.LatestNote = workout.WorkoutNotes.MaxBy(x => x.CreatedDateUTC);
+		}
+
+		return dto;
+	}
 }
 
 public enum WorkoutType

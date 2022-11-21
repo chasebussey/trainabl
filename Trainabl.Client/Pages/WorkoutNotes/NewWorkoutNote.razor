@@ -1,0 +1,6 @@
+@page "/NewWorkoutNote/{WorkoutId:guid}"
+<WorkoutNoteForm WorkoutId="WorkoutId" IsEdit="false"/>
+
+@code {
+    [Parameter] public Guid WorkoutId { get; set; }
+}

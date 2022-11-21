@@ -3,8 +3,8 @@
 @inject HttpClient HttpClient
 @inject IDialogService DialogService
 
-<MudTable ServerData="@(new Func<TableState, Task<TableData<WorkoutDTO>>>(ServerReload))" Hover="true" @ref="_table"
-          Bordered="true" LoadingProgressColor="Color.Primary">
+<MudTable ServerData="@(new Func<TableState, Task<TableData<DisplayWorkout>>>(ServerReload))" Hover="true" @ref="_table"
+          LoadingProgressColor="Color.Primary">
     <ToolBarContent>
         <MudSpacer/>
         <MudTextField T="string" ValueChanged="@(OnSearch)" Placeholder="Search" Adornment="Adornment.Start"
@@ -12,20 +12,69 @@
         <MudButton Color="Color.Secondary" Variant="Variant.Filled" Class="mt-3 mr-2" OnClick="ShowAssignWorkoutDialog">Assign a Template</MudButton>
         <MudButton Href="@($"NewWorkout/{ClientId}")" StartIcon="@Icons.Filled.Add" Variant="Variant.Filled" Color="Color.Primary" Class="mt-3">Add</MudButton>
     </ToolBarContent>
+    <ColGroup>
+        <col style="width:10%"/>
+        <col/>
+        <col style="width:10%"/>
+        <col style="width:fit-content; width: -moz-fit-content"/>
+    </ColGroup>
     <HeaderContent>
+        <MudTh></MudTh>
         <MudTh><MudTableSortLabel SortLabel="name_field" T="WorkoutDTO">Name</MudTableSortLabel></MudTh>
         <MudTh><MudTableSortLabel SortLabel="draft_field" T="WorkoutDTO">Draft?</MudTableSortLabel></MudTh>
         <MudTh>Actions</MudTh>
     </HeaderContent>
     <RowTemplate>
-        <MudTd DataLabel="Name">@context.Name</MudTd>
-        <MudTd DataLabel="IsDraft">@context.IsDraft</MudTd>
         <MudTd>
-            <MudIconButton Icon="@Icons.Filled.Edit" Color="Color.Primary" Href="@($"EditWorkout/{context.Id}")"/>
-            <MudIconButton Icon="@Icons.Filled.EditNote" Color="Color.Secondary"/>
+            @if (context.ShowLatestNote)
+            {
+                <MudIconButton Icon="@Icons.Filled.ExpandMore" OnClick="() => context.ShowLatestNote = !context.ShowLatestNote"/>
+            }
+            else
+            {
+                <MudIconButton Icon="@Icons.Filled.ChevronRight" OnClick="() => context.ShowLatestNote = !context.ShowLatestNote"/>
+            }
+        </MudTd>
+        <MudTd DataLabel="Name">@context.Workout.Name</MudTd>
+        <MudTd DataLabel="IsDraft">@context.Workout.IsDraft</MudTd>
+        <MudTd>
+            <MudIconButton Icon="@Icons.Filled.Edit" Color="Color.Primary" Href="@($"EditWorkout/{context.Workout.Id}")"/>
+            <MudIconButton Icon="@Icons.Filled.EditNote" Color="Color.Secondary" Href="@($"NewWorkoutNote/{context.Workout.Id}")"/>
             <MudIconButton Icon="@Icons.Filled.Delete" Color="Color.Error"/>
         </MudTd>
     </RowTemplate>
+    <ChildRowContent>
+        @if (context.ShowLatestNote)
+        {
+            <MudTr>
+                <td colspan="4">
+                    <MudCard Elevation="0">
+                        <MudCardHeader>
+                            <CardHeaderContent>
+                                <MudText Typo="Typo.subtitle1">Note from @context.Workout.LatestNote.CreatedDateUTC.ToString("d")</MudText>
+                            </CardHeaderContent>
+                        </MudCardHeader>
+                        <MudCardContent Class="pa-0">
+                            <MudTable Items="@context.Workout.LatestNote.ExerciseNotes" Context="NoteContext" Hover="true"
+                                      Elevation="0">
+                                <ColGroup>
+                                    <col style="width:30%"/>
+                                    <col style="width:70%"/>
+                                </ColGroup>
+                                <HeaderContent>
+                                    <MudTh>Exercise</MudTh>
+                                    <MudTh>Note</MudTh>
+                                </HeaderContent>
+                                <RowTemplate>
+                                    <MudTd DataLabel="Exercise">@NoteContext.Exercise.MovementName</MudTd>
+                                    <MudTd DataLabel="Note">@NoteContext.Note</MudTd>
+                                </RowTemplate>
+                            </MudTable>
+                        </MudCardContent>
+                    </MudCard></td>
+            </MudTr>
+        }
+    </ChildRowContent>
     <NoRecordsContent>
         <MudText>No matching records found</MudText>
     </NoRecordsContent>
@@ -41,38 +90,39 @@
     [CascadingParameter]
     public Guid ClientId { get; set; }
     
-    private IEnumerable<WorkoutDTO> _pagedData;
-    private MudTable<WorkoutDTO> _table;
+    private IEnumerable<DisplayWorkout> _pagedData;
+    private MudTable<DisplayWorkout> _table;
     private Guid _trainerId;
 
     private int _totalItems;
     private string _searchString = null;
 
-    private async Task<TableData<WorkoutDTO>> ServerReload(TableState state)
+    private async Task<TableData<DisplayWorkout>> ServerReload(TableState state)
     {
         try
         {
-            IEnumerable<WorkoutDTO> data = await HttpClient.GetFromJsonAsync<List<WorkoutDTO>>($"api/Clients/{ClientId}/workouts");
-        data = data.Where(x => string.IsNullOrWhiteSpace(_searchString)
-                               || x.Name.Contains(_searchString, StringComparison.OrdinalIgnoreCase));
+            IEnumerable<WorkoutDTO> dtos = await HttpClient.GetFromJsonAsync<List<WorkoutDTO>>($"api/Clients/{ClientId}/workouts");
+            IEnumerable<DisplayWorkout> data = dtos.Where(x => string.IsNullOrWhiteSpace(_searchString)
+                                   || x.Name.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+                       .Select(x => new DisplayWorkout(x));
 
-        _totalItems = data.Count();
+            _totalItems = data.Count();
 
-        data = state.SortLabel switch
-        {
-            "name_field" => data.OrderByDirection(state.SortDirection, x => x.Name),
-            "draft_field" => data.OrderByDirection(state.SortDirection, x => x.IsDraft),
-            _ => data
-        };
+            data = state.SortLabel switch
+            {
+                "name_field" => data.OrderByDirection(state.SortDirection, x => x.Workout.Name),
+                "draft_field" => data.OrderByDirection(state.SortDirection, x => x.Workout.IsDraft),
+                _ => data
+                };
 
-        _pagedData = data.Skip(state.Page * state.PageSize).Take(state.PageSize).ToArray();
+            _pagedData = data.Skip(state.Page * state.PageSize).Take(state.PageSize).ToArray();
         }
         catch (Exception e)
         {
-            return new TableData<WorkoutDTO> { TotalItems = 0, Items = new List<WorkoutDTO>() };
+            return new TableData<DisplayWorkout> { TotalItems = 0, Items = new List<DisplayWorkout>() };
         }
 
-        return new TableData<WorkoutDTO> { TotalItems = _totalItems, Items = _pagedData };
+        return new TableData<DisplayWorkout> { TotalItems = _totalItems, Items = _pagedData };
     }
 
     private void OnSearch(string str)
@@ -86,5 +136,17 @@
         var options = new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true };
         var parameters = new DialogParameters { ["ClientId"] = ClientId };
         DialogService.Show<AssignWorkoutDialog>("Assign a Template", parameters, options);
+    }
+
+    internal class DisplayWorkout
+    {
+        public WorkoutDTO Workout { get; set; }
+        public bool ShowLatestNote { get; set; }
+
+        public DisplayWorkout(WorkoutDTO workout)
+        {
+            Workout = workout;
+            ShowLatestNote = false;
+        }
     }
 }

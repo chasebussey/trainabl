@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Components.Authorization;
 using MudBlazor;
 using Trainabl.Shared.Models;
 
-namespace Trainabl.Client.Pages;
+namespace Trainabl.Client.Pages.Workouts;
 
 public partial class WorkoutForm
 {

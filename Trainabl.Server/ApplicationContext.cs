@@ -44,5 +44,9 @@ public class ApplicationContext : DbContext
 			       x => JsonSerializer.Serialize(x, (JsonSerializerOptions)null),
 			       x => JsonSerializer.Deserialize<List<ExerciseNote>>(x, (JsonSerializerOptions)null)
 		       );
+
+		builder.Entity<ClientProfile>()
+		       .Navigation(x => x.Metrics)
+		       .AutoInclude();
 	}
 }

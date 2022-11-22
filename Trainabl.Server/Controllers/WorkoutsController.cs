@@ -1,23 +1,29 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Trainabl.Client;
+using Trainabl.Server.Services;
 using Trainabl.Shared.Models;
 
 namespace Trainabl.Server.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class WorkoutsController : ControllerBase
 {
 	private readonly ApplicationContext _context;
+	private AccessControlService _accessControl;
 
-	public WorkoutsController(ApplicationContext context)
+	public WorkoutsController(ApplicationContext context, AccessControlService accessControl)
 	{
-		_context = context;
+		_context       = context;
+		_accessControl = accessControl;
 	}
 
 	#region Get
 
+	[Authorize(Roles="Admin")]
 	[HttpGet]
 	public async Task<IEnumerable<WorkoutDTO>> GetAllWorkouts()
 	{
@@ -27,11 +33,13 @@ public class WorkoutsController : ControllerBase
 	[HttpGet("{id:guid}")]
 	public async Task<ActionResult<WorkoutDTO>> GetWorkoutById(Guid id)
 	{
+		var user    = HttpContext.User;
 		var workout = await _context.Workouts.FindAsync(id);
-		if (workout is null)
-		{
-			return NotFound();
-		}
+		
+		if (workout is null) return NotFound();
+
+		var isAuthorizedForWorkout = await _accessControl.IsAuthorizedForWorkout(user, workout);
+		if (!isAuthorizedForWorkout) return Forbid();
 
 		return Ok(Workout.WorkoutToDto(workout));
 	}
@@ -47,23 +55,27 @@ public class WorkoutsController : ControllerBase
 	[HttpGet("{workoutId:guid}/workoutnotes")]
 	public async Task<ActionResult<IEnumerable<WorkoutNote>>> GetWorkoutNotes(Guid workoutId)
 	{
+		var user    = HttpContext.User;
 		var workout = await _context.Workouts.FindAsync(workoutId);
-		if (workout is null)
-		{
-			return NotFound();
-		}
+		
+		if (workout is null) return NotFound();
 
+		var isAuthorizedForWorkout = await _accessControl.IsAuthorizedForWorkout(user, workout);
+		if (!isAuthorizedForWorkout) return Forbid();
+		
 		return Ok(workout.WorkoutNotes);
 	}
 
 	[HttpGet("{workoutId:guid}/latestworkoutnote")]
 	public async Task<ActionResult<WorkoutNote>> GetLatestWorkoutNote(Guid workoutId)
 	{
+		var user    = HttpContext.User;
 		var workout = await _context.Workouts.FindAsync(workoutId);
-		if (workout is null)
-		{
-			return NotFound();
-		}
+		
+		if (workout is null) return NotFound();
+
+		var isAuthorizedForWorkout = await _accessControl.IsAuthorizedForWorkout(user, workout);
+		if (!isAuthorizedForWorkout) return Forbid();
 
 		return Ok(workout.WorkoutNotes.MaxBy(x => x.CreatedDateUTC));
 	}
@@ -72,6 +84,7 @@ public class WorkoutsController : ControllerBase
 	
 	#region Post
 
+	[Authorize(Roles="Trainer")]
 	[HttpPost]
 	public async Task<IActionResult> CreateWorkout(WorkoutDTO workoutDto)
 	{
@@ -88,13 +101,21 @@ public class WorkoutsController : ControllerBase
 			return BadRequest();
 		}
 	}
-
+	
+	[Authorize(Roles="Trainer")]
 	[HttpPost("{workoutId:guid}/workoutnotes")]
 	public async Task<IActionResult> CreateWorkoutNote(Guid workoutId, WorkoutNote workoutNote)
 	{
 		try
 		{
+			var user    = HttpContext.User;
 			var workout = await _context.Workouts.FindAsync(workoutId);
+
+			if (workout is null) return NotFound();
+
+			var isAuthorizedForWorkout = await _accessControl.IsAuthorizedForWorkout(user, workout);
+			if (!isAuthorizedForWorkout) return Forbid();
+			
 			workoutNote.CreatedDateUTC = DateTime.UtcNow;
 			
 			workout.WorkoutNotes.Add(workoutNote);
@@ -112,16 +133,20 @@ public class WorkoutsController : ControllerBase
 
 	#region Put
 
+	[Authorize(Roles="Trainer")]
 	[HttpPut("{workoutId:guid}")]
 	public async Task<IActionResult> UpdateWorkout(Guid workoutId, WorkoutDTO workoutDto)
 	{
-		var updatedWorkout = Workout.WorkoutFromDto(workoutDto);
-		var workout        = await _context.Workouts.FindAsync(workoutId);
+		var user    = HttpContext.User;
+		var workout = await _context.Workouts.FindAsync(workoutId);
 
-		if (workout is null)
-		{
-			return NotFound();
-		}
+		if (workout is null) return NotFound();
+
+		var isAuthorizedForWorkout = await _accessControl.IsAuthorizedForWorkout(user, workout);
+		if (!isAuthorizedForWorkout) return Forbid();
+
+		var updatedWorkout = Workout.WorkoutFromDto(workoutDto);
+
 
 		workout.Name             = updatedWorkout.Name;
 		workout.Exercises        = updatedWorkout.Exercises;
@@ -149,9 +174,18 @@ public class WorkoutsController : ControllerBase
 		return NoContent();
 	}
 
+	[Authorize(Roles="Trainer")]
 	[HttpPut("{workoutId:guid}/workoutnotes/{noteId:guid}")]
 	public async Task<IActionResult> UpdateWorkoutNote(Guid workoutId, Guid noteId, WorkoutNote updatedNote)
 	{
+		var user    = HttpContext.User;
+		var workout = await _context.Workouts.FindAsync(workoutId);
+
+		if (workout is null) return NotFound();
+
+		var isAuthorizedForWorkout = await _accessControl.IsAuthorizedForWorkout(user, workout);
+		if (!isAuthorizedForWorkout) return Forbid();
+		
 		var note = await _context.WorkoutNotes.FindAsync(noteId);
 		if (note is null)
 		{
@@ -181,14 +215,17 @@ public class WorkoutsController : ControllerBase
 	
 	#region Delete
 
+	[Authorize(Roles="Trainer")]
 	[HttpDelete("{workoutId:guid}/workoutnotes")]
 	public async Task<IActionResult> DeleteWorkoutNotes(Guid workoutId)
 	{
+		var user    = HttpContext.User;
 		var workout = await _context.Workouts.FindAsync(workoutId);
-		if (workout is null)
-		{
-			return NotFound();
-		}
+
+		if (workout is null) return NotFound();
+
+		var isAuthorizedForWorkout = await _accessControl.IsAuthorizedForWorkout(user, workout);
+		if (!isAuthorizedForWorkout) return Forbid();
 
 		workout.WorkoutNotes.Clear();
 
@@ -203,14 +240,17 @@ public class WorkoutsController : ControllerBase
 		}
 	}
 
+	[Authorize(Roles="Trainer")]
 	[HttpDelete("{workoutId:guid}/workoutnotes/{noteId:guid}")]
 	public async Task<IActionResult> DeleteWorkoutNoteById(Guid workoutId, Guid noteId)
 	{
+		var user    = HttpContext.User;
 		var workout = await _context.Workouts.FindAsync(workoutId);
-		if (workout is null)
-		{
-			return NotFound();
-		}
+
+		if (workout is null) return NotFound();
+
+		var isAuthorizedForWorkout = await _accessControl.IsAuthorizedForWorkout(user, workout);
+		if (!isAuthorizedForWorkout) return Forbid();
 
 		var note = workout.WorkoutNotes.Find(x => x.Id == noteId);
 		if (note is null)

@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Trainabl.Server;
+using Trainabl.Server.Services;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -13,6 +15,7 @@ builder.Services.AddRazorPages();
 var connectionString = builder.Configuration.GetConnectionString("default");
 builder.Services.AddDbContext<ApplicationContext>(opt =>
 	                                                  opt.UseSqlServer(connectionString));
+builder.Services.AddScoped<AccessControlService>();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

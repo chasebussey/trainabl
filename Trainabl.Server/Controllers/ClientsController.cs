@@ -1,38 +1,60 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Trainabl.Shared.Models;
+using Microsoft.AspNetCore.Authorization;
+using Trainabl.Server.Services;
 
 namespace Trainabl.Server.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class ClientsController : ControllerBase
 {
 	private readonly ApplicationContext _context;
+	private AccessControlService _accessControl;
 
-	public ClientsController(ApplicationContext context)
+	public ClientsController(ApplicationContext context, AccessControlService accessControl)
 	{
-		_context = context;
+		_context       = context;
+		_accessControl = accessControl;
 	}
 
 	#region Get
 	
 	[HttpGet("{clientId:guid}/latestmetrics")]
-	public async Task<IEnumerable<Metric>> GetLatestMetrics(Guid clientId)
+	public async Task<ActionResult<IEnumerable<Metric>>> GetLatestMetrics(Guid clientId)
 	{
-		var metrics     = await _context.Metrics.Where(x => x.ClientProfileId == clientId).ToListAsync();
-		var metricNames = metrics.DistinctBy(x => x.Name).Select(x => x.Name);
+		var user   = HttpContext.User;
+		var client = await _context.ClientProfiles.FindAsync(clientId);
+		
+		if (client is null) return NotFound();
+
+		var isAuthorizedForClient = await _accessControl.IsAuthorizedForClient(user, client);
+		if (!isAuthorizedForClient) return Forbid();
+
+		List<Metric>        metrics     = client.Metrics;
+		IEnumerable<string> metricNames = metrics.DistinctBy(x => x.Name).Select(x => x.Name);
 		List<Metric> latestMetrics = metricNames.Select(metricName => metrics.Where(x => x.Name == metricName)
-			                                                      .OrderByDescending(x => x.CreatedUTC)
-			                                                      .First())
-		                                              .ToList();
+		                                                                     .OrderByDescending(x => x.CreatedUTC)
+		                                                                     .First())
+		                                        .ToList();
 
 		return latestMetrics;
 	}
 
 	[HttpGet("{clientId:guid}/workouts")]
-	public async Task<IEnumerable<WorkoutDTO>> GetWorkoutsByClient(Guid clientId)
+	public async Task<ActionResult<IEnumerable<WorkoutDTO>>> GetWorkoutsByClient(Guid clientId)
 	{
+		var user   = HttpContext.User;
+		var client = await _context.ClientProfiles.FindAsync(clientId);
+
+		if (client is null) return NotFound();
+
+		var isAuthorizedForClient = await _accessControl.IsAuthorizedForClient(user, client);
+		if (!isAuthorizedForClient) return Forbid();
+		
 		List<WorkoutDTO> workouts = await _context.Workouts.Where(x => x.ClientProfileId == clientId)
 		                                          .Select(x => Workout.WorkoutToDto(x))
 		                                          .ToListAsync();
@@ -42,6 +64,14 @@ public class ClientsController : ControllerBase
 	[HttpGet("{clientId:guid}/workoutnotes")]
 	public async Task<ActionResult<IEnumerable<WorkoutNote>>> GetAllWorkoutNotesForClient(Guid clientId)
 	{
+		var user   = HttpContext.User;
+		var client = await _context.ClientProfiles.FindAsync(clientId);
+
+		if (client is null) return NotFound();
+
+		var isAuthorizedForClient = await _accessControl.IsAuthorizedForClient(user, client);
+		if (!isAuthorizedForClient) return Forbid();
+		
 		List<WorkoutNote> notes = await _context.Workouts.Where(x => x.ClientProfileId == clientId)
 		                                        .Where(x => x.WorkoutNotes != null && x.WorkoutNotes.Count > 0)
 		                                        .SelectMany(x => x.WorkoutNotes)
@@ -53,6 +83,14 @@ public class ClientsController : ControllerBase
 	[HttpGet("{clientId:guid}/latestworkoutnotes")]
 	public async Task<ActionResult<IEnumerable<WorkoutNote>>> GetLatestWorkoutNotesForClient(Guid clientId)
 	{
+		var user   = HttpContext.User;
+		var client = await _context.ClientProfiles.FindAsync(clientId);
+
+		if (client is null) return NotFound();
+
+		var isAuthorizedForClient = await _accessControl.IsAuthorizedForClient(user, client);
+		if (!isAuthorizedForClient) return Forbid();
+		
 		List<WorkoutNote> notes = await _context.Workouts.Where(x => x.ClientProfileId == clientId)
 		                                        .Where(x => x.WorkoutNotes != null && x.WorkoutNotes.Count > 0)
 		                                        .Select(x => x.WorkoutNotes.MaxBy(y => y.CreatedDateUTC))
@@ -97,9 +135,18 @@ public class ClientsController : ControllerBase
 	
 	#region Delete
 
+	[Authorize(Roles="Trainer")]
 	[HttpDelete("{clientId:guid}/workoutnotes")]
 	public async Task<IActionResult> DeleteAllWorkoutNotesForClient(Guid clientId)
 	{
+		var user   = HttpContext.User;
+		var client = await _context.ClientProfiles.FindAsync(clientId);
+
+		if (client is null) return NotFound();
+
+		var isAuthorizedForClient = await _accessControl.IsAuthorizedForClient(user, client);
+		if (!isAuthorizedForClient) return Forbid();
+
 		var workouts = await _context.Workouts.Where(x => x.ClientProfileId == clientId).ToListAsync();
 
 		workouts.ForEach(x => x.WorkoutNotes.Clear());
@@ -114,6 +161,11 @@ public class ClientsController : ControllerBase
 			return UnprocessableEntity();
 		}
 	}
+	
+	#endregion
+	
+	#region Helpers
+
 	
 	#endregion
 }

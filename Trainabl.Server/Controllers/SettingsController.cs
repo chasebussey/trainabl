@@ -1,9 +1,11 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Trainabl.Shared.Models;
 
 namespace Trainabl.Server.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class SettingsController : ControllerBase

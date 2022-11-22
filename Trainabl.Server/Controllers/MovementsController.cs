@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Trainabl.Shared;
@@ -5,6 +6,7 @@ using Trainabl.Shared.Models;
 
 namespace Trainabl.Server.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class MovementsController : ControllerBase
@@ -16,6 +18,7 @@ public class MovementsController : ControllerBase
 		_context = context;
 	}
 	
+	[Authorize(Roles="Trainer")]
 	[HttpPost]
 	public async Task<ActionResult<bool>> CreateMovement(Movement movement)
 	{
@@ -59,6 +62,7 @@ public class MovementsController : ControllerBase
 		return Task.FromResult(matches);
 	}
 
+	[Authorize(Roles="Trainer")]
 	[HttpPut("{id:guid}")]
 	public async Task<IActionResult> UpdateMovement(Guid id, Movement updatedMovement)
 	{
@@ -90,6 +94,7 @@ public class MovementsController : ControllerBase
 		return NoContent();
 	}
 
+	[Authorize(Roles="Trainer")]
 	[HttpDelete("{id:guid}")]
 	public async Task<IActionResult> DeleteMovement(Guid id)
 	{

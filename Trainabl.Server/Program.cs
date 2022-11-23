@@ -42,6 +42,8 @@ else
 {
 	app.UseExceptionHandler("/Error");
 	app.UseHsts();
+	using var context = app.Services.GetService<ApplicationContext>();
+	context?.Database.Migrate();
 }
 
 app.UseHttpsRedirection();

@@ -7,12 +7,12 @@
 @inject SignOutSessionStateManager SignOutManager
 @inject IConfiguration Configuration
 @inject IDialogService DialogService
-<MudThemeProvider Theme="CustomTheme" IsDarkMode="@_isDarkMode"/>
+<MudThemeProvider Theme="CustomTheme" IsDarkMode="true"/>
 <MudDialogProvider/>
 <MudSnackbarProvider/>
 
 <MudLayout>
-    <MudDrawer @bind-Open="_drawerOpen" Elevation="0" Variant="DrawerVariant.Mini" ClipMode="DrawerClipMode.Never">
+    <MudDrawer Open="false" Elevation="0" Variant="DrawerVariant.Mini" ClipMode="DrawerClipMode.Never">
         @if (_drawerOpen)
         {
             <MudImage Src="Images/TrainablType.png" Width="200" ObjectPosition="ObjectPosition.Left" Class="ml-5 my-4"/>

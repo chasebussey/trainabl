@@ -138,4 +138,69 @@ public class TrainersController : ControllerBase
 	}
 
 	#endregion
+	
+	#region Delete
+
+	[HttpDelete("{trainerId:guid}/clients")]
+	public async Task<IActionResult> DeleteAllClientsForTrainer(Guid trainerId)
+	{
+		var user    = HttpContext.User;
+		var trainer = await _context.TrainerProfiles.FindAsync(trainerId);
+
+		if (trainer is null) return NotFound();
+
+		var isAuthorizedForTrainer = await _accessControl.IsAuthorizedForTrainer(user, trainer);
+		if (!isAuthorizedForTrainer) return Forbid();
+
+		try
+		{
+			await _context.Entry(trainer).Navigation("ClientProfiles").LoadAsync();
+			
+			// delete all the client workouts, due to TrainerID FK constraint, efcore won't cascade delete
+			foreach (var client in trainer.ClientProfiles)
+			{
+				await _context.Entry(client).Navigation("Workouts").LoadAsync();
+				_context.Workouts.RemoveRange(client.Workouts);
+			}
+			
+			_context.ClientProfiles.RemoveRange(trainer.ClientProfiles);
+			await _context.SaveChangesAsync();
+			return Ok();
+		}
+		catch (Exception e)
+		{
+			return UnprocessableEntity();
+		}
+	}
+
+	[HttpDelete("{trainerId:guid}/clients/{clientId:guid}")]
+	public async Task<IActionResult> DeleteClientForTrainer(Guid trainerId, Guid clientId)
+	{
+		var user    = HttpContext.User;
+		var trainer = await _context.TrainerProfiles.FindAsync(trainerId);
+		var client  = await _context.ClientProfiles.FindAsync(clientId);
+
+		if (trainer is null) return NotFound();
+		if (client is null) return NotFound();
+
+		var isAuthorizedForTrainer = await _accessControl.IsAuthorizedForTrainer(user, trainer);
+		var isAuthorizedForClient  = await _accessControl.IsAuthorizedForClient(user, client);
+		if (!isAuthorizedForTrainer || !isAuthorizedForClient) return Forbid();
+
+		try
+		{
+			await _context.Entry(client).Navigation("Workouts").LoadAsync();
+			_context.Workouts.RemoveRange(client.Workouts);
+			_context.ClientProfiles.Remove(client);
+			await _context.SaveChangesAsync();
+			return Ok();
+		}
+		catch (Exception e)
+		{
+			return UnprocessableEntity();
+		}
+		
+	}
+
+	#endregion
 }

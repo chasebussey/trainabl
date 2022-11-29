@@ -51,7 +51,7 @@
     {
         try
         {
-            _clients = await HttpClient.GetFromJsonAsync<List<ClientProfileDTO>>($"api/Trainers/{_trainerId}/clients");
+            _clients = (await HttpClient.GetFromJsonAsync<List<ClientProfileDTO>>($"api/Trainers/{_trainerId}/clients")).OrderBy(x => x.Name).ToList();
         }
         catch (Exception e)
         {

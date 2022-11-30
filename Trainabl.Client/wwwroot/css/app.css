@@ -17,3 +17,7 @@
 }
 
 textarea { resize: vertical !important; }
+
+#blazor-error-ui {
+    background-color: #f64e62ff;
+}

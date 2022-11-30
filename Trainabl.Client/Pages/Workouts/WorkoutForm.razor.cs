@@ -2,6 +2,8 @@ using System.Net.Http.Json;
 using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Components.Web;
+using Microsoft.JSInterop;
 using MudBlazor;
 using Trainabl.Shared.Models;
 
@@ -17,10 +19,14 @@ public partial class WorkoutForm
 	[Inject] private HttpClient HttpClient { get; set; }
 	[Inject] private ISnackbar Snackbar { get; set; }
 	[Inject] ILocalStorageService LocalStorageService { get; set; }
+	[Inject] private IJSRuntime JsRuntime { get; set; }
 
 	private Guid _trainerId;
 	private int _circuitNumExercises;
 	private string _circuitTime;
+	private MudDataGrid<Exercise> _dataGrid;
+	private MudTextField<string> _lastMovementName;
+	private bool _newExerciseRowExists;
 
 	protected override async Task OnParametersSetAsync()
 	{
@@ -41,6 +47,20 @@ public partial class WorkoutForm
 		Workout.TrainerProfileId = _trainerId;
 		
 		await base.OnParametersSetAsync();
+	}
+
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		if (!firstRender)
+		{
+			if (_newExerciseRowExists)
+			{
+				await JsRuntime.InvokeVoidAsync("FocusLastRow");
+				_newExerciseRowExists = false;
+			}
+		}
+		
+		await base.OnAfterRenderAsync(firstRender);
 	}
 
 	private void AddExercise()
@@ -94,5 +114,15 @@ public partial class WorkoutForm
 				Snackbar.Add("Error saving workout, try again.", Severity.Error);
 			}
 		}
+	}
+
+	private async Task HandleKeyDown(KeyboardEventArgs e)
+	{
+		if (e.Key == "Enter")
+		{
+			_newExerciseRowExists = true;
+			AddExercise();
+		}
+		
 	}
 }

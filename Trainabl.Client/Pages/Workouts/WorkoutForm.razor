@@ -28,27 +28,31 @@
     </MudCardContent>
 </MudCard>
 
-<MudDataGrid Items="Workout.Exercises" Bordered="true" Dense="true" EditMode="DataGridEditMode.Cell" ReadOnly="false">
+<MudDataGrid Items="Workout.Exercises" Bordered="true" Dense="true" EditMode="DataGridEditMode.Cell" ReadOnly="false" @ref="_dataGrid">
     <ToolBarContent>
         <MudText Typo="Typo.h6">Exercises</MudText>
         <MudSpacer/>
         <MudButton StartIcon="@Icons.Filled.Add" Color="Color.Primary" OnClick="AddExercise">Add Exercise</MudButton>
     </ToolBarContent>
     <Columns>
-        <Column T="Exercise" Field="MovementName" Title="Movement Name"/>
+        <Column T="Exercise" Field="MovementName" Title="Movement Name">
+            <EditTemplate>
+                <MudTextField T="string" @bind-value="@context.Item.MovementName" OnKeyDown="HandleKeyDown" UserAttributes="@(new Dictionary<string, object>{ { "Name", "movementName" } })"/>
+            </EditTemplate>
+        </Column>
         <Column T="Exercise" Field="Sets" Title="Sets">
             <EditTemplate>
-                <MudNumericField T="int?" @bind-Value="@context.Item.Sets"/>
+                <MudNumericField T="int?" @bind-Value="@context.Item.Sets" OnKeyDown="HandleKeyDown"/>
             </EditTemplate>
         </Column>
         <Column T="Exercise" Field="Reps" Title="Reps">
             <EditTemplate>
-                <MudNumericField T="int?" @bind-Value="@context.Item.Reps"/>
+                <MudNumericField T="int?" @bind-Value="@context.Item.Reps" OnKeyDown="HandleKeyDown"/>
             </EditTemplate>
         </Column>
         <Column T="Exercise" Field="Time" Title="Time">
             <EditTemplate>
-                <MudTextField T="string" @bind-Value="@context.Item.Time"/>
+                <MudTextField T="string" @bind-Value="@context.Item.Time" OnKeyDown="HandleKeyDown"/>
             </EditTemplate>
         </Column>
         <Column T="Exercise" Field="SetMeasureType" Title="Set Measure">

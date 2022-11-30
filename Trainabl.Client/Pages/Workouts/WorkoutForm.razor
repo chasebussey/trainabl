@@ -52,7 +52,7 @@
         </Column>
         <Column T="Exercise" Field="Time" Title="Time">
             <EditTemplate>
-                <MudTextField T="string" @bind-Value="@context.Item.Time" OnKeyDown="HandleKeyDown"/>
+                <MudTextField T="string" @bind-Value="@context.Item.Time" OnKeyDown="HandleKeyDown" Mask="@(new PatternMask("00:00"))"/>
             </EditTemplate>
         </Column>
         <Column T="Exercise" Field="SetMeasureType" Title="Set Measure">

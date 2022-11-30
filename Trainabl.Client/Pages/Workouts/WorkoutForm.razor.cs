@@ -36,7 +36,8 @@ public partial class WorkoutForm
 			{
 				new()
 				{
-					MovementName = ""
+					MovementName = "",
+					Index = 0
 				}
 			}
 		};
@@ -65,17 +66,24 @@ public partial class WorkoutForm
 
 	private void AddExercise()
 	{
+		var lastIndex = 0;
+		
+		if (Workout!.Exercises.Count > 0)
+		{
+			lastIndex = Workout.Exercises.MaxBy(x => x.Index)!.Index;
+		}
 		Workout.Exercises.Add(
 			new Exercise
 			{
-				MovementName = ""
+				MovementName = "",
+				Index = lastIndex + 1
 			}
 		);
 	}
 
 	private void RemoveExercise(Exercise ex)
 	{
-		Workout.Exercises.Remove(ex);
+		Workout!.Exercises.Remove(ex);
 	}
 
 	private void UpdateCircuitExercises(int num){ }
@@ -83,7 +91,7 @@ public partial class WorkoutForm
 
 	private async Task Save(bool isDraft = false)
 	{
-		Workout.IsDraft = isDraft;
+		Workout!.IsDraft = isDraft;
 
 		if (ClientId is not null && ClientId != Guid.Empty)
 		{
@@ -124,5 +132,33 @@ public partial class WorkoutForm
 			AddExercise();
 		}
 		
+	}
+
+	private void MoveExerciseUp(Exercise ex)
+	{
+		var targetIndex = ex.Index - 1;
+
+		if (Workout.Exercises.Any(x => x.Index == targetIndex))
+		{
+			var swapEx = Workout.Exercises.First(x => x.Index == targetIndex);
+			swapEx.Index = ex.Index;
+		}
+
+		ex.Index          = targetIndex;
+		Workout.Exercises = Workout.Exercises.OrderBy(x => x.Index).ToList();
+	}
+
+	private void MoveExerciseDown(Exercise ex)
+	{
+		var targetIndex = ex.Index + 1;
+
+		if (Workout.Exercises.Any(x => x.Index == targetIndex))
+		{
+			var swapEx = Workout.Exercises.First(x => x.Index == targetIndex);
+			swapEx.Index = ex.Index;
+		}
+
+		ex.Index          = targetIndex;
+		Workout.Exercises = Workout.Exercises.OrderBy(x => x.Index).ToList();
 	}
 }

@@ -37,7 +37,7 @@
     <Columns>
         <Column T="Exercise" Field="MovementName" Title="Movement Name">
             <EditTemplate>
-                <MudTextField T="string" @bind-value="@context.Item.MovementName" OnKeyDown="HandleKeyDown" UserAttributes="@(new Dictionary<string, object>{ { "Name", "movementName" } })"/>
+                <MudTextField T="string" @bind-Value="@context.Item.MovementName" OnKeyDown="HandleKeyDown" UserAttributes="@(new Dictionary<string, object>{ { "Name", "movementName" } })"/>
             </EditTemplate>
         </Column>
         <Column T="Exercise" Field="Sets" Title="Sets">
@@ -68,7 +68,11 @@
         <Column T="Exercise" IsEditable="false" Sortable="false">
             <CellTemplate>
                 <div class="d-flex justify-center">
-                    <MudIconButton Color="Color.Error" Icon="@Icons.Filled.Delete" Size="Size.Small" OnClick="() => RemoveExercise(context.Item)"/>
+                    <MudButtonGroup Size="Size.Small" Variant="Variant.Outlined">
+                        <MudIconButton Icon="@Icons.Filled.ExpandLess" Disabled="@(context.Item.Index == 0)" OnClick="() => MoveExerciseUp(context.Item)"/>
+                        <MudIconButton Icon="@Icons.Filled.ExpandMore" Disabled="@(context.Item.Index == Workout.Exercises.Count - 1)" OnClick="() => MoveExerciseDown(context.Item)"/>
+                        <MudIconButton Color="Color.Error" Icon="@Icons.Filled.Delete" Size="Size.Small" OnClick="() => RemoveExercise(context.Item)"/>
+                    </MudButtonGroup>
                 </div>
             </CellTemplate>
         </Column>

@@ -2,6 +2,7 @@ namespace Trainabl.Shared.Models;
 
 public class Exercise
 {
+	public int Index { get; set; }
 	public string MovementName { get; set; }
 	public int? Sets { get; set; }
 	public int? Reps { get; set; }

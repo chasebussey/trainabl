@@ -40,7 +40,6 @@ else
     {
         _workout = await HttpClient.GetFromJsonAsync<WorkoutDTO>($"api/workouts/{WorkoutId}");
         
-        Console.WriteLine("App: WorkoutNoteForm OPSA");
         WorkoutNote ??= new WorkoutNote();
 
         InitializeNote();

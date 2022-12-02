@@ -10,6 +10,7 @@
         </div>
         <div class="d-inline-flex align-center gap-4" style="width:75%">
             <MudCheckBox T="bool" Label="Requires Equipment" @bind-Checked="@Movement.RequiresEquipment"/>
+            <!-- TODO: Make these into AutoCompletes -->
             <MudSelect T="MuscleGroup" @bind-Value="@Movement.PrimaryMuscleGroup" Label="Primary Muscle Group" Class="flex-shrink-0">
                 <MudSelectItem Value="@MuscleGroup.PectoralisMajor">Pectoralis Major</MudSelectItem>
                 <MudSelectItem Value="@MuscleGroup.PectoralisMinor">Pectoralis Minor</MudSelectItem>

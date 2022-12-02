@@ -86,6 +86,9 @@ public class MovementsController : ControllerBase
 		movement.PrimaryMuscleGroup   = updatedMovement.PrimaryMuscleGroup;
 		movement.SecondaryMuscleGroup = updatedMovement.SecondaryMuscleGroup;
 		movement.RequiresEquipment    = updatedMovement.RequiresEquipment;
+		movement.Tags                 = updatedMovement.Tags;
+		
+		movement.LastModifiedUTC = DateTime.UtcNow;
 
 		try
 		{

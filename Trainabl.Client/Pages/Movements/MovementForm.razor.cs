@@ -15,13 +15,29 @@ public partial class MovementForm
 	[Inject] private ISnackbar Snackbar { get; set; }
 	[Inject] private NavigationManager NavigationManager { get; set; }
 
-	private string _tagsString;
+	private string TagsString
+	{
+		get
+		{
+			if (Movement?.Tags != null && Movement.Tags.Count > 0)
+			{
+				return string.Join(", ", Movement.Tags);
+			}
+
+			return "";
+		}
+		set
+		{
+			if (Movement != null) Movement.Tags = value.Split(',').Select(x => x.Trim()).ToList();
+		}
+	}
 
 	protected override async Task OnParametersSetAsync()
 	{
 		Movement ??= new Movement();
-		if (TrainerId is not null) Movement.CreatedBy = TrainerId.Value;
-		
+		if (TrainerId is not null && !IsEdit) Movement.CreatedBy = TrainerId.Value;
+		if (TrainerId is not null) Movement.LastModifiedBy       = TrainerId.Value;
+
 		await base.OnParametersSetAsync();
 	}
 
@@ -29,10 +45,21 @@ public partial class MovementForm
 	{
 		if (!IsEdit)
 		{
-			Console.WriteLine($"App: Movement date {Movement.CreatedDateUTC}");
-			Console.WriteLine($"App: Movement ID {Movement.Id}");
-			Console.WriteLine($"App: Movement PMG {Movement.PrimaryMuscleGroup:G}");
 			var result = await HttpClient.PostAsJsonAsync("api/Movements", Movement);
+
+			if (result.IsSuccessStatusCode)
+			{
+				Snackbar.Add("Movement saved", Severity.Success);
+				NavigationManager.NavigateTo("MovementLibrary");
+			}
+			else
+			{
+				Snackbar.Add("Error saving movement, try again", Severity.Error);
+			}
+		}
+		else
+		{
+			var result = await HttpClient.PutAsJsonAsync($"api/Movements/{Movement.Id}", Movement);
 
 			if (result.IsSuccessStatusCode)
 			{
@@ -48,16 +75,9 @@ public partial class MovementForm
 
 	private void Cancel() => NavigationManager.NavigateTo("MovementLibrary");
 
-	private void UpdateMovementTags(string tags)
-	{
-		Movement.Tags = tags.Split(',').Select(x => x.Trim()).ToList();
-		_tagsString   = tags;
-	}
-
 	private void DeleteTag(MudChip chip)
 	{
 		Movement.Tags.Remove((string)chip.Value);
-		_tagsString = string.Join(", ", Movement.Tags);
 	}
 
 	private void UpdateSecondaryMuscleGroup(MuscleGroup value) => Movement.SecondaryMuscleGroup = value;

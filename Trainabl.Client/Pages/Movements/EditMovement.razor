@@ -1,0 +1,18 @@
+@page "/EditMovement/{MovementId:guid}"
+@using Trainabl.Shared.Models
+@inject HttpClient HttpClient
+
+<MovementForm IsEdit="true" Movement="@_movement"></MovementForm>
+
+@code {
+    [Parameter] public Guid MovementId { get; set; }
+    
+    private Movement _movement;
+    
+    protected override async Task OnParametersSetAsync()
+    {
+        _movement = await HttpClient.GetFromJsonAsync<Movement>($"api/Movements/{MovementId}");
+        await base.OnParametersSetAsync();
+    }
+
+}

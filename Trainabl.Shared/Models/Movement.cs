@@ -10,6 +10,7 @@ public class Movement
 	public List<string> Tags { get; set; }
 	
 	public Guid CreatedBy { get; set; }
+	public Guid LastModifiedBy { get; set; }
 	public DateTime CreatedDateUTC { get; set; }
 	public DateTime LastModifiedUTC { get; set; }
 }

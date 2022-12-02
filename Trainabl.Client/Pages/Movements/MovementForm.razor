@@ -1,5 +1,13 @@
 @using Trainabl.Shared.Models
-<MudText Typo="Typo.h5" Class="mb-4">New Movement</MudText>
+
+@if (!IsEdit)
+{
+    <MudText Typo="Typo.h5" Class="mb-4">New Movement</MudText>
+}
+else
+{
+    <MudText Typo="Typo.h5" Class="mb-4">Edit Movement</MudText>
+}
 
 <MudCard>
     <MudCardContent>
@@ -54,10 +62,9 @@
             </MudSelect>
         </div>
         <MudTextField T="string" Label="Tags" Variant="Variant.Outlined" HelperText="Comma separated list of tags" 
-                      HelperTextOnFocus="true" Value="_tagsString" Immediate="true"
-                      ValueChanged="UpdateMovementTags"/>
+                      HelperTextOnFocus="true" @bind-Value="TagsString" Immediate="true"/>
         <MudChipSet>
-            @if (Movement.Tags is not null && Movement.Tags.Count > 0)
+            @if (Movement?.Tags is not null && Movement.Tags.Count > 0)
             {
                 foreach (var tag in Movement.Tags)
                 {

@@ -5,7 +5,7 @@
 @inject ILocalStorageService LocalStorageService
 @attribute [Authorize(Roles = "Trainer")]
 <style>
-    .mud-toolbar {
+    .mud-table-toolbar {
         flex-wrap: wrap;
         height: auto;
     }
@@ -25,13 +25,13 @@
         </div>
     </ToolBarContent>
     <HeaderContent>
-        <MudTh>Name</MudTh>
-        <MudTh>Primary Muscle Group</MudTh>
-        <MudTh>Secondary Muscle Group</MudTh>
+        <MudTh><MudTableSortLabel T="Movement" SortLabel="name">Name</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel T="Movement" SortLabel="primaryMuscleGroup">Primary Muscle Group</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel T="Movement" SortLabel="secondaryMuscleGroup">Secondary Muscle Group</MudTableSortLabel></MudTh>
         <MudTh>Requires Equipment?</MudTh>
         <MudTh>Tags</MudTh>
-        <MudTh>Created Date</MudTh>
-        <MudTh>Last Modified</MudTh>
+        <MudTh><MudTableSortLabel T="Movement" SortLabel="createdDate">Created Date</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel T="Movement" SortLabel="lastModified">Last Modified</MudTableSortLabel></MudTh>
     </HeaderContent>
     <RowTemplate>
         <MudTd DataLabel="Name">@context.Name</MudTd>
@@ -39,8 +39,8 @@
         <MudTd DataLabel="SecondaryMuscleGroup">@context.SecondaryMuscleGroup?.ToString("G")</MudTd>
         <MudTd DataLabel="RequiresEquipment">@context.RequiresEquipment</MudTd>
         <MudTd DataLabel="Tags">@string.Join(", ", context.Tags)</MudTd>
-        <MudTd DataLabel="CreatedDate">@context.CreatedDateUTC.ToString("d")</MudTd>
-        <MudTd DataLabel="LastModified">@context.LastModifiedUTC.ToString("d")</MudTd>
+        <MudTd DataLabel="CreatedDate">@context.CreatedDateUTC.ToLocalTime().ToString("d")</MudTd>
+        <MudTd DataLabel="LastModified">@context.LastModifiedUTC.ToLocalTime().ToString("d")</MudTd>
     </RowTemplate>
     <NoRecordsContent>
         <MudText>No matching records found</MudText>
@@ -75,6 +75,16 @@
                                || x.Tags.Contains(_searchString));
 
         _totalItems = data.Count();
+
+        data = state.SortLabel switch
+        {
+            "name" => data.OrderByDirection(state.SortDirection, x => x.Name),
+            "primaryMuscleGroup" => data.OrderByDirection(state.SortDirection, x => x.PrimaryMuscleGroup),
+            "secondaryMuscleGroup" => data.OrderByDirection(state.SortDirection, x => x.SecondaryMuscleGroup),
+            "createdDate" => data.OrderByDirection(state.SortDirection, x => x.CreatedDateUTC),
+            "lastModified" => data.OrderByDirection(state.SortDirection, x => x.LastModifiedUTC),
+            _ => data
+        };
 
         _pagedData = data.Skip(state.Page * state.PageSize).Take(state.PageSize).ToArray();
         return new TableData<Movement>() { TotalItems = _totalItems, Items = _pagedData };

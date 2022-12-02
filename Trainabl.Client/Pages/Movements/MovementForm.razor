@@ -1,0 +1,68 @@
+@using Trainabl.Shared.Models
+<MudText Typo="Typo.h5" Class="mb-4">New Movement</MudText>
+
+<MudCard>
+    <MudCardContent>
+        <div class="gap-4 d-flex">
+            <MudTextField T="string" Margin="Margin.Dense" Label="Movement Name" @bind-Value="@Movement.Name"/>
+            <MudButton Color="Color.Error" OnClick="Cancel">Cancel</MudButton>
+            <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Save">Save</MudButton>
+        </div>
+        <div class="d-inline-flex align-center gap-4" style="width:75%">
+            <MudCheckBox T="bool" Label="Requires Equipment" @bind-Checked="@Movement.RequiresEquipment"/>
+            <MudSelect T="MuscleGroup" @bind-Value="@Movement.PrimaryMuscleGroup" Label="Primary Muscle Group" Class="flex-shrink-0">
+                <MudSelectItem Value="@MuscleGroup.PectoralisMajor">Pectoralis Major</MudSelectItem>
+                <MudSelectItem Value="@MuscleGroup.PectoralisMinor">Pectoralis Minor</MudSelectItem>
+                <MudSelectItem Value="@MuscleGroup.Trapezius">Trapezius</MudSelectItem>
+                <MudSelectItem Value="@MuscleGroup.Rhomboids">Rhomboids</MudSelectItem>
+                <MudSelectItem Value="@MuscleGroup.LatissimusDorsi">Latissimus Dorsi</MudSelectItem>
+                <MudSelectItem Value="@MuscleGroup.ErectorSpinae">Erector Spinae</MudSelectItem>
+                <MudSelectItem Value="@MuscleGroup.Biceps">Biceps</MudSelectItem>
+                <MudSelectItem Value="@MuscleGroup.Triceps">Triceps</MudSelectItem>
+                <MudSelectItem Value="@MuscleGroup.Forearms">Forearms</MudSelectItem>
+                <MudSelectItem Value="@MuscleGroup.AnteriorDeltoid">Anterior Deltoid</MudSelectItem>
+                <MudSelectItem Value="@MuscleGroup.LateralDeltoid">Lateral Deltoid</MudSelectItem>
+                <MudSelectItem Value="@MuscleGroup.PosteriorDeltoid">Posterior Deltoid</MudSelectItem>
+                <MudSelectItem Value="@MuscleGroup.Quadriceps">Quadriceps</MudSelectItem>
+                <MudSelectItem Value="@MuscleGroup.Hamstrings">Hamstrings</MudSelectItem>
+                <MudSelectItem Value="@MuscleGroup.Glutes">Glutes</MudSelectItem>
+                <MudSelectItem Value="@MuscleGroup.Calves">Calves</MudSelectItem>
+                <MudSelectItem Value="@MuscleGroup.Abdominals">Abdominals</MudSelectItem>
+                <MudSelectItem Value="@MuscleGroup.Obliques">Obliques</MudSelectItem>
+            </MudSelect>
+            <MudSelect T="MuscleGroup?" @@bind-Value="@Movement.SecondaryMuscleGroup" Label="Secondary Muscle Group">
+                <MudSelectItem T="MuscleGroup?" Value="@null">--</MudSelectItem>
+                <MudSelectItem T="MuscleGroup?" Value="@MuscleGroup.PectoralisMajor">Pectoralis Major</MudSelectItem>
+                <MudSelectItem T="MuscleGroup?" Value="@MuscleGroup.PectoralisMinor">Pectoralis Minor</MudSelectItem>
+                <MudSelectItem T="MuscleGroup?" Value="@MuscleGroup.Trapezius">Trapezius</MudSelectItem>
+                <MudSelectItem T="MuscleGroup?" Value="@MuscleGroup.Rhomboids">Rhomboids</MudSelectItem>
+                <MudSelectItem T="MuscleGroup?" Value="@MuscleGroup.LatissimusDorsi">Latissimus Dorsi</MudSelectItem>
+                <MudSelectItem T="MuscleGroup?" Value="@MuscleGroup.ErectorSpinae">Erector Spinae</MudSelectItem>
+                <MudSelectItem T="MuscleGroup?" Value="@MuscleGroup.Biceps">Biceps</MudSelectItem>
+                <MudSelectItem T="MuscleGroup?" Value="@MuscleGroup.Triceps">Triceps</MudSelectItem>
+                <MudSelectItem T="MuscleGroup?" Value="@MuscleGroup.Forearms">Forearms</MudSelectItem>
+                <MudSelectItem T="MuscleGroup?" Value="@MuscleGroup.AnteriorDeltoid">Anterior Deltoid</MudSelectItem>
+                <MudSelectItem T="MuscleGroup?" Value="@MuscleGroup.LateralDeltoid">Lateral Deltoid</MudSelectItem>
+                <MudSelectItem T="MuscleGroup?" Value="@MuscleGroup.PosteriorDeltoid">Posterior Deltoid</MudSelectItem>
+                <MudSelectItem T="MuscleGroup?" Value="@MuscleGroup.Quadriceps">Quadriceps</MudSelectItem>
+                <MudSelectItem T="MuscleGroup?" Value="@MuscleGroup.Hamstrings">Hamstrings</MudSelectItem>
+                <MudSelectItem T="MuscleGroup?" Value="@MuscleGroup.Glutes">Glutes</MudSelectItem>
+                <MudSelectItem T="MuscleGroup?" Value="@MuscleGroup.Calves">Calves</MudSelectItem>
+                <MudSelectItem T="MuscleGroup?" Value="@MuscleGroup.Abdominals">Abdominals</MudSelectItem>
+                <MudSelectItem T="MuscleGroup?" Value="@MuscleGroup.Obliques">Obliques</MudSelectItem>
+            </MudSelect>
+        </div>
+        <MudTextField T="string" Label="Tags" Variant="Variant.Outlined" HelperText="Comma separated list of tags" 
+                      HelperTextOnFocus="true" Value="_tagsString" Immediate="true"
+                      ValueChanged="UpdateMovementTags"/>
+        <MudChipSet>
+            @if (Movement.Tags is not null && Movement.Tags.Count > 0)
+            {
+                foreach (var tag in Movement.Tags)
+                {
+                    <MudChip OnClose="DeleteTag" Text="@($"#{tag}")" Value="@tag"/>
+                }
+            }
+        </MudChipSet>
+    </MudCardContent>
+</MudCard>

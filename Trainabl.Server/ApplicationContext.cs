@@ -48,5 +48,12 @@ public class ApplicationContext : DbContext
 		builder.Entity<ClientProfile>()
 		       .Navigation(x => x.Metrics)
 		       .AutoInclude();
+
+		builder.Entity<Movement>()
+		       .Property(x => x.Tags)
+		       .HasConversion(
+			       listTags => string.Join(",", listTags),
+			       stringTags => stringTags.Split(",", StringSplitOptions.None).ToList()
+			    );
 	}
 }

@@ -22,6 +22,10 @@ public class MovementsController : ControllerBase
 	[HttpPost]
 	public async Task<ActionResult<bool>> CreateMovement(Movement movement)
 	{
+		if (movement.Id == Guid.Empty) movement.Id                                = Guid.NewGuid();
+		if (movement.CreatedDateUTC == DateTime.MinValue) movement.CreatedDateUTC = DateTime.UtcNow;
+		movement.LastModifiedUTC = DateTime.UtcNow;
+		
 		_context.Movements.Add(movement);
 		var results = await _context.SaveChangesAsync();
 
@@ -40,8 +44,8 @@ public class MovementsController : ControllerBase
 		return await _context.Movements.FindAsync(id);
 	}
 
-	[HttpGet]
-	public Task<IEnumerable<Movement>> SearchMovements(string? name = null, string? targetMuscleGroup = null, bool? requiresEquipment = null)
+	[HttpGet("search")]
+	public Task<IEnumerable<Movement>> SearchMovements(string? name = null, MuscleGroup? targetMuscleGroup = null, bool? requiresEquipment = null)
 	{
 		IEnumerable<Movement> matches = _context.Movements;
 		if (name is not null)
@@ -51,7 +55,7 @@ public class MovementsController : ControllerBase
 
 		if (targetMuscleGroup is not null)
 		{
-			matches = matches.Where(x => x.TargetMuscleGroup.Equals(targetMuscleGroup));
+			matches = matches.Where(x => x.PrimaryMuscleGroup == targetMuscleGroup || x.SecondaryMuscleGroup == targetMuscleGroup);
 		}
 
 		if (requiresEquipment is not null)
@@ -78,9 +82,10 @@ public class MovementsController : ControllerBase
 			return NotFound();
 		}
 
-		movement.Name              = updatedMovement.Name;
-		movement.TargetMuscleGroup = updatedMovement.TargetMuscleGroup;
-		movement.RequiresEquipment = updatedMovement.RequiresEquipment;
+		movement.Name                 = updatedMovement.Name;
+		movement.PrimaryMuscleGroup   = updatedMovement.PrimaryMuscleGroup;
+		movement.SecondaryMuscleGroup = updatedMovement.SecondaryMuscleGroup;
+		movement.RequiresEquipment    = updatedMovement.RequiresEquipment;
 
 		try
 		{

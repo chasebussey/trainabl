@@ -157,9 +157,12 @@ public class WorkoutsController : ControllerBase
 		workout.TrainerProfileId = updatedWorkout.TrainerProfileId;
 		workout.ClientProfileId  = updatedWorkout.ClientProfileId;
 
-		if (workout.WorkoutNotes is { Count: > 0 } && !workout.WorkoutNotes.Contains(workoutDto.LatestNote))
+		if (workout.WorkoutNotes is { Count: > 0 })
 		{
-			workout.WorkoutNotes.Add(workoutDto.LatestNote);
+			if (!workout.WorkoutNotes.Exists(x => x.Id == workoutDto.LatestNote.Id))
+			{
+				workout.WorkoutNotes.Add(workoutDto.LatestNote);
+			}
 		}
 
 		try

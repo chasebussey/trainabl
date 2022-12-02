@@ -1,0 +1,19 @@
+@page "/NewMovement"
+@using Blazored.LocalStorage
+@using Trainabl.Shared.Models
+@inject ILocalStorageService LocalStorageService
+@attribute [Authorize(Roles = "Trainer")]
+
+<MovementForm IsEdit="false" TrainerId="_trainerId"/>
+
+@code {
+    private Guid _trainerId;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        var trainerProfile = await LocalStorageService.GetItemAsync<TrainerProfile>("trainerProfile");
+        _trainerId = trainerProfile.Id;
+        await base.OnParametersSetAsync();
+    }
+
+}

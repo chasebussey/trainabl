@@ -1,0 +1,71 @@
+@page "/MovementLibrary"
+@using Blazored.LocalStorage
+@using Trainabl.Shared.Models
+@inject HttpClient HttpClient
+@inject ILocalStorageService LocalStorageService
+@attribute [Authorize(Roles = "Trainer")]
+<MudTable ServerData="@(new Func<TableState, Task<TableData<Movement>>>(ServerReload))" Hover="true" Dense="true" @ref="_table"
+          LoadingProgressColor="Color.Primary">
+    <ToolBarContent>
+        <MudText Typo="Typo.h6">Movements</MudText>
+        <MudSpacer/>
+        <MudTextField T="string" ValueChanged="@(OnSearch)" Placeholder="Search" Adornment="Adornment.Start"
+                      AdornmentIcon="@Icons.Filled.Search" IconSize="Size.Medium" Class="mr-2 mt-0"/>
+        <MudButton Href="NewMovement" StartIcon="@Icons.Filled.Add" Variant="Variant.Filled" Color="Color.Primary" Class="mt-3">Add</MudButton>
+    </ToolBarContent>
+    <HeaderContent>
+        <MudTh>Name</MudTh>
+        <MudTh>Primary Muscle Group</MudTh>
+        <MudTh>Secondary Muscle Group</MudTh>
+        <MudTh>Requires Equipment?</MudTh>
+        <MudTh>Tags</MudTh>
+        <MudTh>Created Date</MudTh>
+        <MudTh>Last Modified</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Name">@context.Name</MudTd>
+        <MudTd DataLabel="PrimaryMuscleGroup">@context.PrimaryMuscleGroup.ToString("G")</MudTd>
+        <MudTd DataLabel="SecondaryMuscleGroup">@context.SecondaryMuscleGroup?.ToString("G")</MudTd>
+        <MudTd DataLabel="RequiresEquipment">@context.RequiresEquipment</MudTd>
+        <MudTd DataLabel="Tags">@string.Join(", ", context.Tags)</MudTd>
+        <MudTd DataLabel="CreatedDate">@context.CreatedDateUTC.ToString("d")</MudTd>
+        <MudTd DataLabel="LastModified">@context.LastModifiedUTC.ToString("d")</MudTd>
+    </RowTemplate>
+    <NoRecordsContent>
+        <MudText>No matching records found</MudText>
+    </NoRecordsContent>
+    <PagerContent>
+        <MudTablePager/>
+    </PagerContent>
+</MudTable>
+
+@code {
+    private IEnumerable<Movement> _pagedData;
+    private MudTable<Movement> _table;
+    private Guid _trainerId;
+
+    private int _totalItems;
+    private string _searchString = null;
+
+    private async Task<TableData<Movement>> ServerReload(TableState state)
+    {
+        IEnumerable<Movement> data = await HttpClient.GetFromJsonAsync<List<Movement>>("api/Movements");
+
+        // TODO: Make search work with secondary muscle group also
+        data = data.Where(x => string.IsNullOrWhiteSpace(_searchString)
+                               || x.Name.Contains(_searchString, StringComparison.OrdinalIgnoreCase)
+                               || x.PrimaryMuscleGroup.ToString("G").Contains(_searchString, StringComparison.OrdinalIgnoreCase)
+                               || x.Tags.Contains(_searchString));
+
+        _totalItems = data.Count();
+
+        _pagedData = data.Skip(state.Page * state.PageSize).Take(state.PageSize).ToArray();
+        return new TableData<Movement>() { TotalItems = _totalItems, Items = _pagedData };
+    }
+
+    private void OnSearch(string str)
+    {
+        _searchString = str;
+        _table.ReloadServerData();
+    }
+}

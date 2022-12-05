@@ -10,7 +10,7 @@ public class Exercise
 	
 	public SetMeasureType SetMeasureType { get; set; }
 	
-	public Movement Movement { get; set; }
+	public Movement? Movement { get; set; }
 
 	public override string ToString()
 	{

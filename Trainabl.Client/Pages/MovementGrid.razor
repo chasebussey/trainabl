@@ -1,0 +1,174 @@
+@using Blazored.LocalStorage
+@using Trainabl.Shared.Models
+@inject HttpClient HttpClient
+@inject ILocalStorageService LocalStorageService
+@inject ISnackbar Snackbar
+@attribute [Authorize(Roles = "Trainer")]
+<style>
+    .mud-table-toolbar {
+        flex-wrap: wrap;
+        height: auto;
+    }
+</style>
+<MudTable ServerData="@(new Func<TableState, Task<TableData<Movement>>>(ServerReload))" Hover="false" Dense="true" @ref="_table"
+          LoadingProgressColor="Color.Primary" Bordered="true" Elevation="0" MultiSelection="true">
+    <ToolBarContent>
+        <MudText Typo="Typo.h6">Movements</MudText>
+        <MudSpacer/>
+        <MudTextField T="string" ValueChanged="@(OnSearch)" Placeholder="Search" Adornment="Adornment.Start"
+                      AdornmentIcon="@Icons.Filled.Search" IconSize="Size.Medium" Class="mr-2 mt-0"/>
+        <MudButton Href="NewMovement" StartIcon="@Icons.Filled.Add" Variant="Variant.Filled" Color="Color.Primary" Class="mt-3">Add</MudButton>
+        <div style="flex-basis:100%; height: 0; flex-shrink: 0"></div>
+        <div class="d-flex gap-4 my-2" style="width:100%;">
+            <MudSpacer/>
+            <MudCheckBox T="bool" Label="Only show movements that do not require equipment" Checked="_noEquipmentOnly" CheckedChanged="OnCheckChanged"></MudCheckBox>
+            <MudButton StartIcon="@Icons.Filled.PlaylistAddCheck" Variant="Variant.Filled" Color="Color.Secondary" OnClick="AddSelectedToWorkout">
+                Add selected movements to workout
+            </MudButton>
+        </div>
+    </ToolBarContent>
+    <HeaderContent>
+        <MudTh><MudTableSortLabel T="Movement" SortLabel="name">Name</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel T="Movement" SortLabel="primaryMuscleGroup">Primary Muscle Group</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel T="Movement" SortLabel="secondaryMuscleGroup">Secondary Muscle Group</MudTableSortLabel></MudTh>
+        <MudTh>Requires Equipment?</MudTh>
+        <MudTh>Tags</MudTh>
+        <MudTh><MudTableSortLabel T="Movement" SortLabel="createdDate">Created Date</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel T="Movement" SortLabel="lastModified">Last Modified</MudTableSortLabel></MudTh>
+        <MudTh>Actions</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Name">@context.Name</MudTd>
+        <MudTd DataLabel="PrimaryMuscleGroup">@context.PrimaryMuscleGroup.ToString("G")</MudTd>
+        <MudTd DataLabel="SecondaryMuscleGroup">@context.SecondaryMuscleGroup?.ToString("G")</MudTd>
+        <MudTd DataLabel="RequiresEquipment">@context.RequiresEquipment</MudTd>
+        <MudTd DataLabel="Tags">@string.Join(", ", context.Tags)</MudTd>
+        <MudTd DataLabel="CreatedDate">@context.CreatedDateUTC.ToLocalTime().ToString("d")</MudTd>
+        <MudTd DataLabel="LastModified">@context.LastModifiedUTC.ToLocalTime().ToString("d")</MudTd>
+        <MudTd>
+            <MudTooltip Text="Add to Workout">
+                <MudIconButton Icon="@Icons.Filled.PlaylistAdd" Color="Color.Primary" Size="Size.Small" OnClick="@(() => AddToWorkout(context))"/>
+            </MudTooltip>
+            <MudIconButton Href="@($"EditMovement/{context.Id}")" Icon="@Icons.Filled.Edit" Color="Color.Secondary" Size="Size.Small"/>
+        </MudTd>
+    </RowTemplate>
+    <NoRecordsContent>
+        <MudText>No matching records found</MudText>
+    </NoRecordsContent>
+    <PagerContent>
+        <MudTablePager/>
+    </PagerContent>
+</MudTable>
+
+@code {
+    [CascadingParameter] public WorkoutDTO Workout { get; set; } = null!;
+    private IEnumerable<Movement> _pagedData;
+    private MudTable<Movement> _table;
+    private Guid _trainerId;
+
+    private int _totalItems;
+    private string _searchString = null;
+    private bool _noEquipmentOnly;
+
+    private async Task<TableData<Movement>> ServerReload(TableState state)
+    {
+        IEnumerable<Movement> data = await HttpClient.GetFromJsonAsync<List<Movement>>("api/Movements");
+
+        if (_noEquipmentOnly)
+        {
+            data = data.Where(x => !x.RequiresEquipment);
+        }
+        
+        data = data.Where(x => string.IsNullOrWhiteSpace(_searchString)
+                               || x.Name.Contains(_searchString, StringComparison.OrdinalIgnoreCase)
+                               || x.PrimaryMuscleGroup.ToString("G").Contains(_searchString, StringComparison.OrdinalIgnoreCase)
+                               || (x.SecondaryMuscleGroup is not null && x.SecondaryMuscleGroup.Value.ToString("G").Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+                               || x.Tags.Contains(_searchString));
+
+        _totalItems = data.Count();
+
+        data = state.SortLabel switch
+        {
+            "name" => data.OrderByDirection(state.SortDirection, x => x.Name),
+            "primaryMuscleGroup" => data.OrderByDirection(state.SortDirection, x => x.PrimaryMuscleGroup),
+            "secondaryMuscleGroup" => data.OrderByDirection(state.SortDirection, x => x.SecondaryMuscleGroup),
+            "createdDate" => data.OrderByDirection(state.SortDirection, x => x.CreatedDateUTC),
+            "lastModified" => data.OrderByDirection(state.SortDirection, x => x.LastModifiedUTC),
+            _ => data
+        };
+
+        _pagedData = data.Skip(state.Page * state.PageSize).Take(state.PageSize).ToArray();
+        return new TableData<Movement>() { TotalItems = _totalItems, Items = _pagedData };
+    }
+
+    private void OnSearch(string str)
+    {
+        _searchString = str;
+        _table.ReloadServerData();
+    }
+
+    private void OnCheckChanged(bool val)
+    {
+        _noEquipmentOnly = val;
+        _table.ReloadServerData();
+    }
+
+    private void AddToWorkout(Movement movement)
+    {
+        if (Workout.Exercises.Count == 1 && Workout.Exercises.First().MovementName == "")
+        {
+            Workout.Exercises = new List<Exercise>
+            {
+                new()
+                {
+                    Index = 0,
+                    MovementName = movement.Name,
+                    Movement = movement
+                }
+            };
+            Snackbar.Add($"{movement.Name} added", Severity.Success);
+            return;
+        }
+
+        var lastIndex = Workout.Exercises.MaxBy(x => x.Index).Index;
+        
+        Workout.Exercises.Add(new Exercise
+        {
+            Index = lastIndex + 1,
+            MovementName = movement.Name,
+            Movement = movement
+        });
+
+        Snackbar.Add($"{movement.Name} added", Severity.Success);
+    }
+
+    private void AddSelectedToWorkout()
+    {
+        List<Movement> selectedMovements = _table.SelectedItems.ToList();
+
+        if (Workout.Exercises.Count == 1 && Workout.Exercises.First().MovementName == "")
+        {
+            Workout.Exercises = selectedMovements.Select((x, index) => new Exercise
+            {
+                Index = index,
+                MovementName = x.Name,
+                Movement = x
+            }).ToList();
+
+            Snackbar.Add($"{selectedMovements.Count} movements added", Severity.Success);
+            return;
+        }
+
+        var lastIndex = Workout.Exercises.MaxBy(x => x.Index).Index;
+       
+        Workout.Exercises.AddRange(
+            selectedMovements.Select((x, index) => new Exercise
+            {
+                Index = lastIndex + index,
+                MovementName = x.Name,
+                Movement = x
+            }));
+        
+        Snackbar.Add($"{selectedMovements.Count} movements added", Severity.Success);
+    }
+}

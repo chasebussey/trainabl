@@ -9,6 +9,8 @@ public class Exercise
 	public string? Time { get; set; }
 	
 	public SetMeasureType SetMeasureType { get; set; }
+	
+	public Movement Movement { get; set; }
 
 	public override string ToString()
 	{

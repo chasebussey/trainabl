@@ -1,0 +1,113 @@
+@using Trainabl.Shared.Models
+<MudCard>
+    <MudCardContent>
+        <MudGrid>
+            <MudItem xs="12">
+                <div class="d-inline-flex align-center">
+                    <MudText Typo="Typo.h6">Workout Requires Equipment:</MudText>
+                    <MudCheckBox T="bool" ReadOnly="true" @bind-Checked="_requiresEquipment"/>
+                </div>
+            </MudItem>
+            <MudItem xs="12">
+                <MudText Typo="Typo.h6">Movement Tags:</MudText>
+                <MudChipSet ReadOnly="true">
+                    @foreach (var tag in _movementTags)
+                    {
+                        <MudChip>#@tag</MudChip>
+                    }
+                </MudChipSet>
+            </MudItem>
+            <MudItem xs="12">
+                <MudText Typo="Typo.h6">Targeted Muscle Groups:</MudText>
+            </MudItem>
+            <MudItem xs="6">
+                <MudList>
+                    @foreach (KeyValuePair<MuscleGroup, int> muscleGroup in _targetMuscleGroups)
+                    {
+                        <MudListItem>
+                            @muscleGroup.Key.ToString("G"): @muscleGroup.Value sets
+                        </MudListItem>
+                    }
+                </MudList>
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudChart ChartType="ChartType.Pie" Height="75%" Width="75%" 
+                          InputData="@_targetMuscleGroups.Values.Select(x => (double)x).ToArray()" 
+                          InputLabels="@_targetMuscleGroups.Keys.Select(x => x.ToString("G")).ToArray()"/>
+            </MudItem>
+        </MudGrid>
+    </MudCardContent>
+</MudCard>
+
+@code {
+    [CascadingParameter] public WorkoutDTO Workout { get; set; }
+
+    private Dictionary<MuscleGroup, int> _targetMuscleGroups;
+    private bool _requiresEquipment;
+    private List<string> _movementTags;
+    private Dictionary<string, int> _chartData;
+
+    protected override Task OnParametersSetAsync()
+    {
+        _targetMuscleGroups = GetMuscleGroupsAndSets();
+        _requiresEquipment = GetRequiresEquipment();
+        _movementTags = GetMovementTags();
+        return base.OnParametersSetAsync();
+    }
+
+    private Dictionary<MuscleGroup, int> GetMuscleGroupsAndSets()
+    {
+        var muscleGroups = new Dictionary<MuscleGroup, int>();
+
+        if (WorkoutIsEmpty()) return muscleGroups;
+        
+        foreach (var exercise in Workout.Exercises)
+        {
+            var primary = exercise.Movement.PrimaryMuscleGroup;
+            if (muscleGroups.ContainsKey(primary))
+            {
+                muscleGroups[primary] += exercise.Sets ?? 1;
+            }
+            else
+            {
+                muscleGroups.Add(primary, exercise.Sets ?? 1);
+            }
+
+            MuscleGroup? secondary = exercise.Movement.SecondaryMuscleGroup;
+
+            if (secondary is null) continue;
+            
+            if (muscleGroups.ContainsKey(secondary.Value))
+            {
+                muscleGroups[secondary.Value] += exercise.Sets ?? 1;
+            }
+            else
+            {
+                muscleGroups.Add(secondary.Value, exercise.Sets ?? 1);
+            }
+        }
+
+        return muscleGroups;
+    }
+
+    private List<string> GetMovementTags()
+    {
+        var tags = new List<string>();
+
+        if (WorkoutIsEmpty()) return tags;
+
+        tags = Workout.Exercises.Select(x => x.Movement).SelectMany(x => x.Tags).ToList();
+
+        return tags;
+    }
+
+    private bool GetRequiresEquipment()
+    {
+        return !WorkoutIsEmpty() && Workout.Exercises.Any(x => x.Movement.RequiresEquipment);
+    }
+
+    private bool WorkoutIsEmpty()
+    {
+        return Workout.Exercises.Count <= 0 || (Workout.Exercises.Count == 1 && Workout.Exercises.First().MovementName == "");
+    }
+}

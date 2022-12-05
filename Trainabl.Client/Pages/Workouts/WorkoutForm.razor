@@ -27,60 +27,70 @@
         <MudTextField T="string" Lines="4" Label="Description" Variant="Variant.Outlined" @bind-Value="Workout.Description"/>
     </MudCardContent>
 </MudCard>
-
-<MudDataGrid Items="Workout.Exercises" Bordered="true" Dense="true" EditMode="DataGridEditMode.Cell" ReadOnly="false" @ref="_dataGrid">
-    <ToolBarContent>
-        <MudText Typo="Typo.h6">Exercises</MudText>
-        <MudSpacer/>
-        <MudButton StartIcon="@Icons.Filled.Add" Color="Color.Primary" OnClick="AddExercise">Add Exercise</MudButton>
-    </ToolBarContent>
-    <Columns>
-        <Column T="Exercise" Field="MovementName" Title="Movement Name">
-            <EditTemplate>
-                <MudTextField T="string" @bind-Value="@context.Item.MovementName" OnKeyDown="HandleKeyDown" UserAttributes="@(new Dictionary<string, object>{ { "Name", "movementName" } })"/>
-            </EditTemplate>
-        </Column>
-        <Column T="Exercise" Field="Sets" Title="Sets">
-            <EditTemplate>
-                <MudNumericField T="int?" @bind-Value="@context.Item.Sets" OnKeyDown="HandleKeyDown"/>
-            </EditTemplate>
-        </Column>
-        <Column T="Exercise" Field="Reps" Title="Reps">
-            <EditTemplate>
-                <MudNumericField T="int?" @bind-Value="@context.Item.Reps" OnKeyDown="HandleKeyDown"/>
-            </EditTemplate>
-        </Column>
-        <Column T="Exercise" Field="Time" Title="Time">
-            <EditTemplate>
-                <MudTextField T="string" @bind-Value="@context.Item.Time" OnKeyDown="HandleKeyDown" Mask="@(new PatternMask("00:00"))"/>
-            </EditTemplate>
-        </Column>
-        <Column T="Exercise" Field="SetMeasureType" Title="Set Measure">
-            <EditTemplate>
-                <MudSelect @bind-Value="context.Item.SetMeasureType">
-                    <MudSelectItem T="SetMeasureType" Value="@SetMeasureType.Warmup">Warmup</MudSelectItem>
-                    <MudSelectItem T="SetMeasureType" Value="@SetMeasureType.Reps">Reps</MudSelectItem>
-                    <MudSelectItem T="SetMeasureType" Value="@SetMeasureType.Time">Time</MudSelectItem>
-                    <MudSelectItem T="SetMeasureType" Value="@SetMeasureType.Failure">Failure</MudSelectItem>
-                </MudSelect>
-            </EditTemplate>
-        </Column>
-        <Column T="Exercise" IsEditable="false" Sortable="false">
-            <CellTemplate>
-                <div class="d-flex justify-center">
-                    <MudButtonGroup Size="Size.Small" Variant="Variant.Outlined">
-                        <MudIconButton Icon="@Icons.Filled.ExpandLess" Disabled="@(context.Item.Index == 0)" OnClick="() => MoveExerciseUp(context.Item)"/>
-                        <MudIconButton Icon="@Icons.Filled.ExpandMore" Disabled="@(context.Item.Index == Workout.Exercises.Count - 1)" OnClick="() => MoveExerciseDown(context.Item)"/>
-                        <MudIconButton Color="Color.Error" Icon="@Icons.Filled.Delete" Size="Size.Small" OnClick="() => RemoveExercise(context.Item)"/>
-                    </MudButtonGroup>
-                </div>
-            </CellTemplate>
-        </Column>
-    </Columns>
-    <PagerContent>
-        <div class="d-flex">
-            <MudSpacer/>
-            <MudButton StartIcon="@Icons.Filled.Add" Color="Color.Primary" Class="ma-2" OnClick="AddExercise">Add Exercise</MudButton>
-        </div>
-    </PagerContent>
-</MudDataGrid>
+<CascadingValue Value="Workout">
+    <MudTabs>
+        <MudTabPanel Text="Exercises">
+            <MudDataGrid Items="Workout.Exercises" Bordered="true" Dense="true" EditMode="DataGridEditMode.Cell" ReadOnly="false" @ref="_dataGrid">
+                <ToolBarContent>
+                    <MudSpacer/>
+                    <MudButton StartIcon="@Icons.Filled.Add" Color="Color.Primary" OnClick="AddExercise">Add Exercise</MudButton>
+                </ToolBarContent>
+                <Columns>
+                    <Column T="Exercise" Field="MovementName" Title="Movement Name">
+                        <EditTemplate>
+                            <MudTextField T="string" @bind-Value="@context.Item.MovementName" OnKeyDown="HandleKeyDown" UserAttributes="@(new Dictionary<string, object> { { "Name", "movementName" } })"/>
+                        </EditTemplate>
+                    </Column>
+                    <Column T="Exercise" Field="Sets" Title="Sets">
+                        <EditTemplate>
+                            <MudNumericField T="int?" @bind-Value="@context.Item.Sets" OnKeyDown="HandleKeyDown"/>
+                        </EditTemplate>
+                    </Column>
+                    <Column T="Exercise" Field="Reps" Title="Reps">
+                        <EditTemplate>
+                            <MudNumericField T="int?" @bind-Value="@context.Item.Reps" OnKeyDown="HandleKeyDown"/>
+                        </EditTemplate>
+                    </Column>
+                    <Column T="Exercise" Field="Time" Title="Time">
+                        <EditTemplate>
+                            <MudTextField T="string" @bind-Value="@context.Item.Time" OnKeyDown="HandleKeyDown" Mask="@(new PatternMask("00:00"))"/>
+                        </EditTemplate>
+                    </Column>
+                    <Column T="Exercise" Field="SetMeasureType" Title="Set Measure">
+                        <EditTemplate>
+                            <MudSelect @bind-Value="context.Item.SetMeasureType">
+                                <MudSelectItem T="SetMeasureType" Value="@SetMeasureType.Warmup">Warmup</MudSelectItem>
+                                <MudSelectItem T="SetMeasureType" Value="@SetMeasureType.Reps">Reps</MudSelectItem>
+                                <MudSelectItem T="SetMeasureType" Value="@SetMeasureType.Time">Time</MudSelectItem>
+                                <MudSelectItem T="SetMeasureType" Value="@SetMeasureType.Failure">Failure</MudSelectItem>
+                            </MudSelect>
+                        </EditTemplate>
+                    </Column>
+                    <Column T="Exercise" IsEditable="false" Sortable="false">
+                        <CellTemplate>
+                            <div class="d-flex justify-center">
+                                <MudButtonGroup Size="Size.Small" Variant="Variant.Outlined">
+                                    <MudIconButton Icon="@Icons.Filled.ExpandLess" Disabled="@(context.Item.Index == 0)" OnClick="() => MoveExerciseUp(context.Item)"/>
+                                    <MudIconButton Icon="@Icons.Filled.ExpandMore" Disabled="@(context.Item.Index == Workout.Exercises.Count - 1)" OnClick="() => MoveExerciseDown(context.Item)"/>
+                                    <MudIconButton Color="Color.Error" Icon="@Icons.Filled.Delete" Size="Size.Small" OnClick="() => RemoveExercise(context.Item)"/>
+                                </MudButtonGroup>
+                            </div>
+                        </CellTemplate>
+                    </Column>
+                </Columns>
+                <PagerContent>
+                    <div class="d-flex">
+                        <MudSpacer/>
+                        <MudButton StartIcon="@Icons.Filled.Add" Color="Color.Primary" Class="ma-2" OnClick="AddExercise">Add Exercise</MudButton>
+                    </div>
+                </PagerContent>
+            </MudDataGrid>
+        </MudTabPanel>
+        <MudTabPanel Text="Movements">
+            <MovementGrid/>
+        </MudTabPanel>
+        <MudTabPanel Text="Details">
+            <DetailsPanel/>
+        </MudTabPanel>
+    </MudTabs>
+</CascadingValue>

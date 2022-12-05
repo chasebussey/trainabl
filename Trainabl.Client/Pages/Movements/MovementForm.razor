@@ -39,7 +39,7 @@ else
                 <MudSelectItem Value="@MuscleGroup.Abdominals">Abdominals</MudSelectItem>
                 <MudSelectItem Value="@MuscleGroup.Obliques">Obliques</MudSelectItem>
             </MudSelect>
-            <MudSelect T="MuscleGroup?" @@bind-Value="@Movement.SecondaryMuscleGroup" Label="Secondary Muscle Group">
+            <MudSelect T="MuscleGroup?" @bind-Value="@Movement.SecondaryMuscleGroup" Label="Secondary Muscle Group">
                 <MudSelectItem T="MuscleGroup?" Value="@null">--</MudSelectItem>
                 <MudSelectItem T="MuscleGroup?" Value="@MuscleGroup.PectoralisMajor">Pectoralis Major</MudSelectItem>
                 <MudSelectItem T="MuscleGroup?" Value="@MuscleGroup.PectoralisMinor">Pectoralis Minor</MudSelectItem>

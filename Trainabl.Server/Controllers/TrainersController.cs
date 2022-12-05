@@ -61,6 +61,24 @@ public class TrainersController : ControllerBase
 		return workouts;
 	}
 
+	[HttpGet("{trainerId:guid}/workoutNotes")]
+	public async Task<ActionResult<IEnumerable<WorkoutNote>>> GetWorkoutNotesByTrainer(Guid trainerId)
+	{
+		var user    = HttpContext.User;
+		var trainer = await _context.TrainerProfiles.FindAsync(trainerId);
+
+		if (trainer is null) return NotFound();
+
+		var isAuthorizedForTrainer = await _accessControl.IsAuthorizedForTrainer(user, trainer);
+		if (!isAuthorizedForTrainer) return Forbid();
+
+		List<WorkoutNote> notes = await _context.Workouts.Where(x => x.TrainerProfileId == trainerId && x.WorkoutNotes != null && x.WorkoutNotes.Count > 0)
+		                                        .SelectMany(x => x.WorkoutNotes)
+		                                        .ToListAsync();
+
+		return notes;
+	}
+
 	[HttpGet("{trainerId:guid}/clients")]
 	public async Task<ActionResult<IEnumerable<ClientProfileDTO>>> GetClientsByTrainer(Guid trainerId)
 	{

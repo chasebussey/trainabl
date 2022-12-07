@@ -28,7 +28,7 @@
     [CascadingParameter]
     public Task<AuthenticationState> AuthState { get; set; }
 
-    public async Task OnLoginSucceeded()
+    private async Task OnLoginSucceeded()
     {
         var user = (await AuthState).User;
 

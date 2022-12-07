@@ -79,6 +79,33 @@ public class TrainersController : ControllerBase
 		return notes;
 	}
 
+	[HttpGet("{trainerId:guid}/workoutNotes/search")]
+	public async Task<ActionResult<IEnumerable<WorkoutNote>>> SearchWorkoutNotes(
+		Guid trainerId, DateTime? startDate, DateTime? endDate, string? searchString)
+	{
+		ActionResult<IEnumerable<WorkoutNote>> notesByTrainer = await GetWorkoutNotesByTrainer(trainerId);
+
+		if (notesByTrainer.Value is null) return NotFound();
+		
+		IEnumerable<WorkoutNote>? notes = notesByTrainer.Value;
+
+		if (startDate != null) notes = notes.Where(x => x.CreatedDateUTC.Date >= startDate);
+		if (endDate != null) notes   = notes.Where(x => x.CreatedDateUTC.Date <= endDate);
+		if (string.IsNullOrEmpty(searchString)) return notes.ToList();
+		
+		// check workout name
+		notes = await notes.ToAsyncEnumerable()
+		                   .WhereAwait(
+			                   async x => (await _context.Workouts.FindAsync(x.WorkoutId)).Name.Contains(searchString, StringComparison.OrdinalIgnoreCase)
+			                              || x.ExerciseNotes.Any(y => 
+				                                                     y.Exercise.MovementName.Contains(searchString, StringComparison.OrdinalIgnoreCase)
+			                                                          || y.Note.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+		                   )
+		                   .ToListAsync();
+
+		return notes.ToList();
+	}
+
 	[HttpGet("{trainerId:guid}/clients")]
 	public async Task<ActionResult<IEnumerable<ClientProfileDTO>>> GetClientsByTrainer(Guid trainerId)
 	{

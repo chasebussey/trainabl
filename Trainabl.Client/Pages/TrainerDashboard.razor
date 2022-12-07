@@ -1,5 +1,7 @@
 @page "/TrainerDashboard"
 @using Blazored.LocalStorage
+@using Trainabl.Client.Pages.WorkoutNotes
+@using Trainabl.Shared.Models
 @inject HttpClient HttpClient
 @inject NavigationManager NavigationManager
 @inject ISnackbar Snackbar
@@ -7,9 +9,32 @@
 @inject ILocalStorageService LocalStorageService
 @attribute [Authorize(Roles = "Trainer")]
 
-<MudText Typo="Typo.h5" Class="mb-4">Trainer Dashboard</MudText>
-<ClientList/>
-
+@if (!_initialized)
+{
+    <Loading/>
+}
+else
+{
+    <MudText Typo="Typo.h5" Class="mb-4">Trainer Dashboard</MudText>
+    <ClientList/>
+    <CascadingValue Value="_trainerId" Name="TrainerId">
+        <WorkoutNotesGrid/>
+    </CascadingValue>
+}
 
 @code {
+    private bool _initialized;
+    private Guid _trainerId;
+    
+    protected override async Task OnInitializedAsync()
+    {
+        var profile = await LocalStorageService.GetItemAsync<TrainerProfile>("trainerProfile");
+        if (profile is not null)
+        {
+            _trainerId = profile.Id;
+            _initialized = true;
+        }
+        await base.OnInitializedAsync();
+    }
+
 }

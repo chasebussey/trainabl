@@ -87,7 +87,7 @@
 </MudTable>
 
 @code {
-    [CascadingParameter]
+    [CascadingParameter(Name = "ClientId")]
     public Guid ClientId { get; set; }
     
     private IEnumerable<DisplayWorkout> _pagedData;

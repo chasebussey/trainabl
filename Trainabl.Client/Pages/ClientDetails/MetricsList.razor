@@ -45,7 +45,7 @@
     </MudList>
 
 @code {
-    [CascadingParameter] Guid ClientId { get; set; }
+    [CascadingParameter(Name = "ClientId")] Guid ClientId { get; set; }
 
     private List<Metric> _metrics = new List<Metric>();
 

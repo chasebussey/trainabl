@@ -1,0 +1,86 @@
+@using Trainabl.Shared.Models
+@using Microsoft.AspNetCore.WebUtilities
+@inject HttpClient HttpClient
+
+@if (!_initialized)
+{
+    <MudSkeleton SkeletonType="SkeletonType.Rectangle"/>
+}
+else
+{
+    <MudTable T="DisplayNote" @ref="_table" LoadingProgressColor="Color.Primary"
+              ServerData="@(new Func<TableState, Task<TableData<DisplayNote>>>(ServerReload))" Loading="!_initialized">
+        <ToolBarContent>
+            <MudSpacer/>
+            <div class="mr-4" style="width: 25%">
+                <MudDateRangePicker Variant="Variant.Text" Adornment="Adornment.Start" Clearable="true" AutoClose="true" @ref="_picker" DateRange="_dateRange"
+                                    DateRangeChanged="OnDateRangeChanged">
+                    <PickerActions>
+                        <MudButton Class="mr-auto align-self-start" OnClick="@(() => _picker.Clear())">Clear</MudButton>
+                        <MudButton OnClick="@(() => _picker.Close(false))" Color="Color.Error">Cancel</MudButton>
+                        <MudButton OnClick="@(() => _picker.Close())" Color="Color.Primary">Ok</MudButton>
+                    </PickerActions>
+                </MudDateRangePicker>
+            </div>
+            <MudTextField T="string" Adornment="Adornment.Start" AdornmentIcon="@Icons.Filled.Search" Value="_searchString" ValueChanged="OnSearch"/>
+        </ToolBarContent>
+        <ColGroup>
+            <col style="width:5%"/>
+            <col/>
+            <col/>
+            <col/>
+        </ColGroup>
+        <HeaderContent>
+            <MudTh></MudTh>
+            <MudTh>Workout</MudTh>
+            <MudTh>Date</MudTh>
+            <MudTh>Client</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd>
+                <MudToggleIconButton @bind-Toggled="@context.ShowNote" Icon="@Icons.Filled.ExpandMore"
+                                     ToggledIcon="@Icons.Filled.ExpandLess"/>
+            </MudTd>
+            <MudTd>@context.Workout.Name</MudTd>
+            <MudTd>@context.Note.CreatedDateUTC.ToLocalTime().ToString("d")</MudTd>
+            <MudTd>@context.ClientName</MudTd>
+        </RowTemplate>
+        <ChildRowContent>
+            @if (context.ShowNote)
+            {
+            <MudTr>
+                <td colspan="4">
+                    <MudCard Elevation="0">
+                        <MudCardHeader>
+                            <CardHeaderContent>
+                                <MudText Typo="Typo.subtitle1">Note from @context.Note.CreatedDateUTC.ToLocalTime().ToString("d")</MudText>
+                            </CardHeaderContent>
+                        </MudCardHeader>
+                        <MudCardContent Class="pa-0">
+                            <MudTable Items="@context.Note.ExerciseNotes" Context="NoteContext" Hover="true"
+                                      Elevation="0">
+                                <ColGroup>
+                                    <col style="width:30%"/>
+                                    <col style="width:70%"/>
+                                </ColGroup>
+                                <HeaderContent>
+                                    <MudTh>Exercise</MudTh>
+                                    <MudTh>Note</MudTh>
+                                </HeaderContent>
+                                <RowTemplate>
+                                    <MudTd DataLabel="Exercise">@NoteContext.Exercise.MovementName</MudTd>
+                                    <MudTd DataLabel="Note">@NoteContext.Note</MudTd>
+                                </RowTemplate>
+                            </MudTable>
+                        </MudCardContent>
+                    </MudCard></td>
+            </MudTr>
+            }
+        </ChildRowContent>
+        <PagerContent>
+            <MudTablePager/>
+        </PagerContent>
+    </MudTable>
+}
+@code {
+}

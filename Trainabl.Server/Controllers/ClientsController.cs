@@ -77,7 +77,35 @@ public class ClientsController : ControllerBase
 		                                        .SelectMany(x => x.WorkoutNotes)
 		                                        .ToListAsync();
 
-		return Ok(notes);
+		return notes;
+	}
+	
+	[HttpGet("{clientId:guid}/workoutNotes/search")]
+	public async Task<ActionResult<IEnumerable<WorkoutNote>>> SearchWorkoutNotes(
+		Guid clientId, DateTime? startDate, DateTime? endDate, string? searchString)
+	{
+		ActionResult<IEnumerable<WorkoutNote>> notesForClient = await GetAllWorkoutNotesForClient(clientId);
+
+		if (notesForClient.Value is null) return NotFound();
+		
+		IEnumerable<WorkoutNote>? notes = notesForClient.Value;
+
+		if (startDate != null) notes = notes.Where(x => x.CreatedDateUTC.Date >= startDate);
+		if (endDate != null) notes   = notes.Where(x => x.CreatedDateUTC.Date <= endDate);
+		if (string.IsNullOrEmpty(searchString)) return notes.ToList();
+		
+		// check workout name
+		notes = await notes.ToAsyncEnumerable()
+		                   .WhereAwait(
+			                   async x => (await _context.Workouts.FindAsync(x.WorkoutId)).Name.Contains(searchString))
+		                   .ToListAsync();
+
+		// check ExerciseNotes
+		notes = notes.Where(
+			x => x.ExerciseNotes.Any(y => y.Exercise.MovementName.Contains(searchString) ||
+			                              y.Note.Contains(searchString)));
+
+		return notes.ToList();
 	}
 
 	[HttpGet("{clientId:guid}/latestworkoutnotes")]

@@ -1,38 +1,45 @@
 @page "/ClientDetails/{ClientId:guid}"
-<CascadingValue Value="ClientId">
-    @if (!_initialized)
-    {
-        <Loading/>
-    }
-    else
-    {
-        <MudText Typo="Typo.h5">Client Details: @_client.Name</MudText>
-        <MudGrid Class="mt-4">
-            <MudItem md="6" xs="12">
-                <MudPaper Class="d-flex mud-width-max py-8 align-center justify-center">Charts placeholder</MudPaper>
-            </MudItem>
-            <MudItem md="6" xs="12">
-                <MudCard>
-                    <MudTabs ApplyEffectsToContainer="true">
-                        <MudTabPanel Text="Metrics">
-                            <MudCardContent>
-                                <MetricsList/>
-                            </MudCardContent>
-                        </MudTabPanel>
-                    </MudTabs>
-                </MudCard>
-            </MudItem>
-            <MudItem md="12" xs="12">
-                <MudCard>
-                    <MudTabs>
-                        <MudTabPanel Text="Workouts">
-                            <MudCardContent>
-                                <WorkoutList/>
-                            </MudCardContent>
-                        </MudTabPanel>
-                    </MudTabs>
-                </MudCard>
-            </MudItem>
-        </MudGrid>
-    }
+@using Trainabl.Client.Pages.WorkoutNotes
+
+<CascadingValue Value="ClientId" Name="ClientId">
+    <CascadingValue Value="_trainerId" Name="TrainerId">
+        @if (!_initialized)
+        {
+            <Loading/>
+        }
+        else
+        {
+            <MudText Typo="Typo.h5">Client Details: @_client.Name</MudText>
+            <MudGrid Class="mt-4">
+                <MudItem md="6" xs="12">
+                    <MudPaper Class="d-flex mud-width-max py-8 align-center justify-center">Charts placeholder</MudPaper>
+                </MudItem>
+                <MudItem md="6" xs="12">
+                    <MudCard>
+                        <MudTabs ApplyEffectsToContainer="true">
+                            <MudTabPanel Text="Metrics">
+                                <MudCardContent>
+                                    <MetricsList/>
+                                </MudCardContent>
+                            </MudTabPanel>
+                        </MudTabs>
+                    </MudCard>
+                </MudItem>
+                <MudItem md="12" xs="12">
+                    <MudCard>
+                        <MudTabs>
+                            <MudTabPanel Text="Workouts">
+                                <MudCardContent>
+                                    <WorkoutList/>
+                                </MudCardContent>
+                            </MudTabPanel>
+                            <MudTabPanel Text="Workout Notes">
+                                <WorkoutNotesGrid/>
+                            </MudTabPanel>
+                        </MudTabs>
+                    </MudCard>
+                </MudItem>
+            </MudGrid>
+        }
+    </CascadingValue>
 </CascadingValue>

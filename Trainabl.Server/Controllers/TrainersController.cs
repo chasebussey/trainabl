@@ -100,6 +100,7 @@ public class TrainersController : ControllerBase
 			                              || x.ExerciseNotes.Any(y => 
 				                                                     y.Exercise.MovementName.Contains(searchString, StringComparison.OrdinalIgnoreCase)
 			                                                          || y.Note.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+			                              || (await _context.ClientProfiles.FindAsync(x.ClientProfileId)).Name.Contains(searchString, StringComparison.OrdinalIgnoreCase)
 		                   )
 		                   .ToListAsync();
 

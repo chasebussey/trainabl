@@ -1,19 +1,17 @@
-<div class="d-flex">
-    <MudSpacer/>
-    <MudSelect T="DateOption" Value="_dateOption" ValueChanged="OnDateOptionChanged">
-        <MudSelectItem Value="DateOption.AllTime">All Time</MudSelectItem>
-        <MudSelectItem Value="DateOption.PastMonth">Past Month</MudSelectItem>
-        <MudSelectItem Value="DateOption.Past3Months">Past 3 Months</MudSelectItem>
-        <MudSelectItem Value="DateOption.Past6Months">Past 6 Months</MudSelectItem>
-        <MudSelectItem Value="DateOption.PastYear">Past Year</MudSelectItem>
-        <MudSelectItem Value="DateOption.Custom">Custom</MudSelectItem>
-    </MudSelect>
-    @if (_dateOption == DateOption.Custom)
-    {
-        <MudDateRangePicker Class="ml-4" DateRange="DateRange" DateRangeChanged="OnDateRangeChanged"/>
-    }
-    <MudSpacer/>
-</div>
+@* TODO: Fix styling on the Custom input *@
+
+<MudSelect T="DateOption" Value="_dateOption" ValueChanged="OnDateOptionChanged" Class="mb-3">
+    <MudSelectItem Value="DateOption.AllTime">All Time</MudSelectItem>
+    <MudSelectItem Value="DateOption.PastMonth">Past Month</MudSelectItem>
+    <MudSelectItem Value="DateOption.Past3Months">Past 3 Months</MudSelectItem>
+    <MudSelectItem Value="DateOption.Past6Months">Past 6 Months</MudSelectItem>
+    <MudSelectItem Value="DateOption.PastYear">Past Year</MudSelectItem>
+    <!--<MudSelectItem Value="DateOption.Custom">Custom</MudSelectItem>-->
+</MudSelect>
+@if (_dateOption == DateOption.Custom)
+{
+    <MudDateRangePicker Class="ml-4" DateRange="DateRange" DateRangeChanged="OnDateRangeChanged"/>
+}
 
 @code {
     [Parameter] public DateRange DateRange { get; set; }

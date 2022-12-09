@@ -4,7 +4,11 @@
 @inject HttpClient HttpClient
 
 <div class="px-5 pb-5">
-    <DateRangeSelect DateRange="_dateRange" DateRangeChanged="async (dr) => await OnDateRangeChanged(dr)"></DateRangeSelect>
+    <MudToolBar Class="justify-space-between align-center">
+        <DateRangeSelect DateRange="_dateRange" DateRangeChanged="async (dr) => await OnDateRangeChanged(dr)"></DateRangeSelect>
+        <MudSpacer/>
+        <MudIconButton Icon="@Icons.Filled.Refresh" OnClick="Refresh" Class="mt-3"/>
+    </MudToolBar>
     <Chart Id="metricsLine" Type="@Chart.ChartType.Line" Datasets="_series" Labels="_labels.ToArray()"/>
 </div>
 
@@ -71,4 +75,8 @@
         }
     }
 
+    private void Refresh()
+    {
+        OnDateRangeChanged(_dateRange);
+    }
 }

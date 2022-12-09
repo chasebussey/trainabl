@@ -24,7 +24,7 @@ public class MetricsController : ControllerBase
 	{
 		var user   = HttpContext.User;
 		var client = await _context.ClientProfiles.FindAsync(metric.ClientProfileId);
-
+		
 		if (client is null) return NotFound();
 
 		var isAuthorizedForClient = await _accessControl.IsAuthorizedForClient(user, client);
@@ -33,6 +33,20 @@ public class MetricsController : ControllerBase
 		metric.Id = Guid.NewGuid();
 
 		_context.Metrics.Add(metric);
+
+		if (metric.Name.Equals("Weight", StringComparison.OrdinalIgnoreCase) ||
+		    metric.Name.Equals("Height", StringComparison.OrdinalIgnoreCase))
+		{
+			var bmi = metric.Name switch
+			{
+				"Weight" => CalculateBMI(
+					metric, client.Metrics.Where(x => x.Name == "Height").OrderByDescending(x => x.CreatedUTC).First()),
+				"Height" => CalculateBMI(
+					client.Metrics.Where(x => x.Name == "Weight").OrderByDescending(x => x.CreatedUTC).First(), metric)
+			};
+			bmi.ClientProfileId = client.Id;
+			_context.Metrics.Add(bmi);
+		}
 
 		try
 		{
@@ -44,4 +58,21 @@ public class MetricsController : ControllerBase
 			return UnprocessableEntity();
 		}
 	}
+
+	#region Helpers
+
+	private Metric CalculateBMI(Metric weight, Metric height)
+	{
+		var bmi = new Metric
+		{
+			Name       = "BMI",
+			CreatedUTC = DateTime.UtcNow,
+			Id         = Guid.NewGuid()
+		};
+		
+		bmi.Value = weight.Value / (height.Value * height.Value) * 703;
+		return bmi;
+	}
+
+	#endregion
 }

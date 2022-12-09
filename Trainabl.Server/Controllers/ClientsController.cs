@@ -126,7 +126,43 @@ public class ClientsController : ControllerBase
 
 		return Ok(notes);
 	}
-	
+
+	[HttpGet("{clientId:guid}/metrics")]
+	public async Task<ActionResult<IEnumerable<Metric>>> GetAllMetricsForClient(Guid clientId)
+	{
+		var user   = HttpContext.User;
+		var client = await _context.ClientProfiles.FindAsync(clientId);
+
+		if (client is null) return NotFound();
+
+		var isAuthorizedForClient = await _accessControl.IsAuthorizedForClient(user, client);
+		if (!isAuthorizedForClient) return Forbid();
+
+		List<Metric> metrics = await _context.Metrics.Where(x => x.ClientProfileId == clientId)
+		                                     .ToListAsync();
+
+		return metrics;
+	}
+
+	[HttpGet("{clientId:guid}/metrics/search")]
+	public async Task<ActionResult<IEnumerable<Metric>>> SearchClientMetrics(DateTime? startDate, DateTime? endDate, Guid clientId)
+	{
+		var user   = HttpContext.User;
+		var client = await _context.ClientProfiles.FindAsync(clientId);
+
+		if (client is null) return NotFound();
+
+		var isAuthorizedForClient = await _accessControl.IsAuthorizedForClient(user, client);
+		if (!isAuthorizedForClient) return Forbid();
+
+		IEnumerable<Metric> metrics = _context.Metrics.Where(x => x.ClientProfileId == clientId);
+		
+		if (startDate != null) metrics = metrics.Where(x => x.CreatedUTC.Date >= startDate);
+		if (endDate != null) metrics   = metrics.Where(x => x.CreatedUTC.Date <= endDate);
+
+		return metrics.ToList();
+	}
+
 	#endregion
 
 	#region Post

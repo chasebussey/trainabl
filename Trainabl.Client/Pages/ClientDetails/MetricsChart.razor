@@ -1,0 +1,74 @@
+@using Trainabl.Shared.Models
+@using Microsoft.AspNetCore.WebUtilities
+@using System.Globalization
+@inject HttpClient HttpClient
+
+<div class="px-5 pb-5">
+    <DateRangeSelect DateRange="_dateRange" DateRangeChanged="async (dr) => await OnDateRangeChanged(dr)"></DateRangeSelect>
+    <Chart Id="metricsLine" Type="@Chart.ChartType.Line" Datasets="_series" Labels="_labels.ToArray()"/>
+</div>
+
+@code {
+    [CascadingParameter(Name = "ClientId")]
+    public Guid ClientId { get; set; }
+    
+    private Dictionary<DateTime, double> _sampleValues;
+    private List<string> _labels = new();
+    private List<Dataset> _series = new();
+    private DateRange? _dateRange;
+    
+    protected override async Task OnParametersSetAsync()
+    {
+        Console.WriteLine("App: MetricsChart OnParametersSetAsync");
+        var metrics = await HttpClient.GetFromJsonAsync<List<Metric>>($"api/Clients/{ClientId}/metrics");
+
+        GenerateDatasets(metrics);
+        
+        await base.OnParametersSetAsync();
+    }
+
+    private async Task OnDateRangeChanged(DateRange dateRange)
+    {
+        _dateRange = dateRange;
+        Console.WriteLine("App: OnDateRangeChanged");
+        var args = new Dictionary<string, string>();
+        if (_dateRange != null)
+        {
+            DateTime start = _dateRange.Start.Value;
+            DateTime end = _dateRange.End.Value;
+
+            start = DateTime.SpecifyKind(start, DateTimeKind.Local);
+            end = DateTime.SpecifyKind(end, DateTimeKind.Local);
+            
+            args.Add("startDate", start.ToUniversalTime().ToString(CultureInfo.InvariantCulture));
+            args.Add("endDate", end.ToUniversalTime().ToString(CultureInfo.InvariantCulture));
+        }
+
+        var uri = QueryHelpers.AddQueryString($"api/Clients/{ClientId}/metrics/search", args);
+        Console.WriteLine($"App: Computed URI = {uri}");
+        
+        var metrics = await HttpClient.GetFromJsonAsync<List<Metric>>(uri);
+        GenerateDatasets(metrics);
+    }
+
+    private void GenerateDatasets(List<Metric> metrics)
+    {
+        metrics = metrics.OrderBy(x => x.CreatedUTC).ToList();
+        
+        _labels = metrics.Select(x => x.CreatedUTC.ToLocalTime().ToString("d")).Distinct().ToList();
+
+        _series = new List<Dataset>();
+        foreach (var metricName in metrics.Select(x => x.Name).Distinct())
+        {
+            var dataset = new Dataset
+            {
+                Label = metricName
+            };
+
+            IEnumerable<Metric> data = metrics.Where(x => x.Name == metricName);
+            dataset.Data = _labels.Select(label => data.FirstOrDefault(x => x.CreatedUTC.ToLocalTime().ToString("d") == label)?.Value ?? null).ToArray();
+            _series.Add(dataset);
+        }
+    }
+
+}

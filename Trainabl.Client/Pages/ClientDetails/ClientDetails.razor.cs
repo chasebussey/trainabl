@@ -19,7 +19,7 @@ public partial class ClientDetails
 	private Guid _trainerId;
 	private ClientProfileDTO _client;
 	private Guid _clientId;
-
+	
 	protected override async Task OnInitializedAsync()
 	{
 		var trainerProfile = await LocalStorageService.GetItemAsync<TrainerProfile>("trainerProfile");

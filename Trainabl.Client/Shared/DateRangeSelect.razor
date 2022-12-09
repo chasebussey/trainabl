@@ -1,0 +1,56 @@
+<div class="d-flex">
+    <MudSpacer/>
+    <MudSelect T="DateOption" Value="_dateOption" ValueChanged="OnDateOptionChanged">
+        <MudSelectItem Value="DateOption.AllTime">All Time</MudSelectItem>
+        <MudSelectItem Value="DateOption.PastMonth">Past Month</MudSelectItem>
+        <MudSelectItem Value="DateOption.Past3Months">Past 3 Months</MudSelectItem>
+        <MudSelectItem Value="DateOption.Past6Months">Past 6 Months</MudSelectItem>
+        <MudSelectItem Value="DateOption.PastYear">Past Year</MudSelectItem>
+        <MudSelectItem Value="DateOption.Custom">Custom</MudSelectItem>
+    </MudSelect>
+    @if (_dateOption == DateOption.Custom)
+    {
+        <MudDateRangePicker Class="ml-4" DateRange="DateRange" DateRangeChanged="OnDateRangeChanged"/>
+    }
+    <MudSpacer/>
+</div>
+
+@code {
+    [Parameter] public DateRange DateRange { get; set; }
+    [Parameter] public EventCallback<DateRange> DateRangeChanged { get; set; }
+
+    private enum DateOption
+    {
+        AllTime,
+        PastMonth,
+        Past3Months,
+        Past6Months,
+        PastYear,
+        Custom
+    }
+
+    private DateOption _dateOption;
+
+    private void OnDateOptionChanged(DateOption dateOption)
+    {
+        _dateOption = dateOption;
+        var today = DateTime.UtcNow.Date;
+        DateRange = _dateOption switch 
+        {
+            DateOption.PastMonth => new DateRange(today.AddMonths(-1), today),
+            DateOption.Past3Months => new DateRange(today.AddMonths(-3), today),
+            DateOption.Past6Months => new DateRange(today.AddMonths(-6), today),
+            DateOption.PastYear => new DateRange(today.AddYears(-1), today),
+            DateOption.AllTime => new DateRange(DateTime.MinValue, today),
+            DateOption.Custom => DateRange,
+            _ => throw new ArgumentOutOfRangeException()
+            };
+        DateRangeChanged.InvokeAsync(DateRange);
+    }
+
+    private void OnDateRangeChanged(DateRange dateRange)
+    {
+        DateRange = dateRange;
+        DateRangeChanged.InvokeAsync(DateRange);
+    }
+}

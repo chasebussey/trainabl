@@ -12,7 +12,15 @@
             <MudText Typo="Typo.h5">Client Details: @_client.Name</MudText>
             <MudGrid Class="mt-4">
                 <MudItem md="6" xs="12">
-                    <MudPaper Class="d-flex mud-width-max py-8 align-center justify-center">Charts placeholder</MudPaper>
+                    <MudCard>
+                        <MudTabs ApplyEffectsToContainer="true">
+                            <MudTabPanel Text="Charts">
+                                <MudCardContent>
+                                    <MetricsChart/>
+                                </MudCardContent>
+                            </MudTabPanel>
+                        </MudTabs>
+                    </MudCard>
                 </MudItem>
                 <MudItem md="6" xs="12">
                     <MudCard>

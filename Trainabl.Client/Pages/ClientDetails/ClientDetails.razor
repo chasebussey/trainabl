@@ -12,7 +12,7 @@
             <MudText Typo="Typo.h5">Client Details: @_client.Name</MudText>
             <MudGrid Class="mt-4">
                 <MudItem md="6" xs="12">
-                    <MudCard>
+                    <MudCard Style="height:60vh; overflow: auto">
                         <MudTabs ApplyEffectsToContainer="true">
                             <MudTabPanel Text="Charts">
                                 <MudCardContent>
@@ -23,8 +23,13 @@
                     </MudCard>
                 </MudItem>
                 <MudItem md="6" xs="12">
-                    <MudCard>
+                    <MudCard Style="height:60vh; overflow: auto">
                         <MudTabs ApplyEffectsToContainer="true">
+                            <MudTabPanel Text="Goals">
+                                <MudCardContent>
+                                    <GoalsList/>
+                                </MudCardContent>
+                            </MudTabPanel>
                             <MudTabPanel Text="Metrics">
                                 <MudCardContent>
                                     <MetricsList/>

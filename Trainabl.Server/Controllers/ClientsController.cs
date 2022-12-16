@@ -163,6 +163,22 @@ public class ClientsController : ControllerBase
 		return metrics.ToList();
 	}
 
+	[HttpGet("{clientId:guid}/goals")]
+	public async Task<ActionResult<IEnumerable<Goal>>> GetAllGoalsForClient(Guid clientId)
+	{
+		var user   = HttpContext.User;
+		var client = await _context.ClientProfiles.FindAsync(clientId);
+
+		if (client is null) return NotFound();
+
+		var isAuthorizedForClient = await _accessControl.IsAuthorizedForClient(user, client);
+		if (!isAuthorizedForClient) return Forbid();
+
+		List<Goal> goals = _context.Goals.Where(x => x.ClientProfileId == clientId).ToList();
+
+		return goals;
+	}
+
 	#endregion
 
 	#region Post
@@ -188,6 +204,34 @@ public class ClientsController : ControllerBase
 		{
 			await _context.SaveChangesAsync();
 			return Created(client.Id.ToString(), client);
+		}
+		catch (Exception e)
+		{
+			return UnprocessableEntity();
+		}
+	}
+
+	[HttpPost("{clientId:guid}/goals")]
+	public async Task<IActionResult> CreateGoal(Guid clientId, Goal goal)
+	{
+		var user   = HttpContext.User;
+		var client = await _context.ClientProfiles.FindAsync(clientId);
+
+		if (client is null) return NotFound();
+
+		var isAuthorized = await _accessControl.IsAuthorizedForClient(user, client);
+		if (!isAuthorized) return Forbid();
+
+		if (goal.Id == Guid.Empty) goal.Id = Guid.NewGuid();
+		
+		goal.CreatedDateUTC = DateTime.UtcNow;
+
+		_context.Goals.Add(goal);
+
+		try
+		{
+			await _context.SaveChangesAsync();
+			return Created(goal.Id.ToString(), goal);
 		}
 		catch (Exception e)
 		{
@@ -224,6 +268,75 @@ public class ClientsController : ControllerBase
 		{
 			return UnprocessableEntity();
 		}
+	}
+
+	[HttpDelete("{clientId:guid}/goals/{goalId:guid}")]
+	public async Task<IActionResult> DeleteGoal(Guid clientId, Guid goalId)
+	{
+		var user   = HttpContext.User;
+		var client = await _context.ClientProfiles.FindAsync(clientId);
+
+		if (client is null) return NotFound();
+
+		var isAuthorizedForClient = await _accessControl.IsAuthorizedForClient(user, client);
+		if (!isAuthorizedForClient) return Forbid();
+
+		var goal = await _context.Goals.FindAsync(goalId);
+
+		if (goal is null) return NotFound();
+
+		_context.Entry(goal).State = EntityState.Deleted;
+
+		try
+		{
+			await _context.SaveChangesAsync();
+		}
+		catch (Exception e)
+		{
+			return UnprocessableEntity();
+		}
+
+		return NoContent();
+	}
+	
+	#endregion
+	
+	#region Put
+
+	[HttpPut("{clientId:guid}/goals/{goalId:guid}")]
+	public async Task<IActionResult> UpdateGoal(Guid clientId, Guid goalId, Goal updatedGoal)
+	{
+		var user   = HttpContext.User;
+		var client = await _context.ClientProfiles.FindAsync(clientId);
+
+		if (client is null) return NotFound();
+
+		var isAuthorizedForClient = await _accessControl.IsAuthorizedForClient(user, client);
+		if (!isAuthorizedForClient) return Forbid();
+
+		var goal = await _context.Goals.FindAsync(goalId);
+		if (goal is null) return NotFound();
+		
+		goal.GoalType    = updatedGoal.GoalType;
+		goal.IsComplete  = updatedGoal.IsComplete;
+		goal.Metric      = updatedGoal.Metric;
+		goal.Comparator  = updatedGoal.Comparator;
+		goal.TargetValue = updatedGoal.TargetValue;
+		goal.Description = updatedGoal.Description;
+		goal.DeadlineUTC = updatedGoal.DeadlineUTC;
+
+		goal.LastModifiedUTC = DateTime.UtcNow;
+
+		try
+		{
+			await _context.SaveChangesAsync();
+		}
+		catch (Exception e)
+		{
+			return UnprocessableEntity();
+		}
+
+		return NoContent();
 	}
 	
 	#endregion

@@ -23,7 +23,6 @@
     
     protected override async Task OnParametersSetAsync()
     {
-        Console.WriteLine("App: MetricsChart OnParametersSetAsync");
         var metrics = await HttpClient.GetFromJsonAsync<List<Metric>>($"api/Clients/{ClientId}/metrics");
 
         GenerateDatasets(metrics);
@@ -34,7 +33,6 @@
     private async Task OnDateRangeChanged(DateRange dateRange)
     {
         _dateRange = dateRange;
-        Console.WriteLine("App: OnDateRangeChanged");
         var args = new Dictionary<string, string>();
         if (_dateRange != null)
         {
@@ -49,7 +47,6 @@
         }
 
         var uri = QueryHelpers.AddQueryString($"api/Clients/{ClientId}/metrics/search", args);
-        Console.WriteLine($"App: Computed URI = {uri}");
         
         var metrics = await HttpClient.GetFromJsonAsync<List<Metric>>(uri);
         GenerateDatasets(metrics);

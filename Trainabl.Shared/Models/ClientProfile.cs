@@ -13,9 +13,9 @@ public class ClientProfile
 	public List<Workout> Workouts { get; set; }
 
 	public TrainerProfile TrainerProfile { get; set; }
-	// TODO: Implement Metrics and Goals
+	
 	public List<Metric> Metrics { get; set; }
-	// public List<Goal> Goals { get; set; }
+	 public List<Goal> Goals { get; set; }
 
 	public static ClientProfileDTO ClientProfileToDto(ClientProfile client) =>
 		new()
@@ -25,6 +25,7 @@ public class ClientProfile
 			Name             = client.Name,
 			Email            = client.Email,
 			Metrics          = client.Metrics,
+			Goals            = client.Goals,
 			CreatedUTC       = client.CreatedUTC
 		};
 
@@ -36,6 +37,7 @@ public class ClientProfile
 			Name             = dto.Name,
 			Email            = dto.Email,
 			Metrics          = dto.Metrics,
+			Goals            = dto.Goals,
 			CreatedUTC       = dto.CreatedUTC
 		};
 }

@@ -1,0 +1,107 @@
+@using Trainabl.Shared.Models
+@inject HttpClient HttpClient
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <DialogContent>
+        <MudForm>
+            <MudSelect T="GoalType" @bind-Value="_goal.GoalType" Label="Goal Type">
+                <MudSelectItem T="GoalType" Value="GoalType.Metric">Metric</MudSelectItem>
+                <MudSelectItem T="GoalType" Value="GoalType.Custom">Custom</MudSelectItem>
+            </MudSelect>
+            @if (_goal.GoalType == GoalType.Metric)
+            {
+                <div class="d-inline-flex gap-4" style="width:100%">
+                    <MudSelect T="string" @bind-Value="_goal.Metric" Label="Metric">
+                        @foreach (var metric in _metrics.DistinctBy(x => x.Name))
+                        {
+                            <MudSelectItem T="string" Value="@metric.Name">@metric.Name</MudSelectItem>
+                        }
+                    </MudSelect>
+                    <MudSelect T="string" @bind-Value="_goal.Comparator" Label="Comparison">
+                        <MudSelectItem T="string" Value="@(">")">&gt;</MudSelectItem>
+                        <MudSelectItem T="string" Value="@(">=")">&ge;</MudSelectItem>
+                        <MudSelectItem T="string" Value="@("<=")">&le;</MudSelectItem>
+                        <MudSelectItem T="string" Value="@("<")">&lt;</MudSelectItem>
+                    </MudSelect>
+                    <MudNumericField T="double?" Label="Target Value" @bind-Value="_goal.TargetValue"/>
+                </div>
+            }
+            <MudTextField T="string" Lines="2" @bind-Value="@_goal.Description" Label="Description"/>
+            <MudDatePicker Label="Deadline" @bind-Date="@_goal.DeadlineUTC"/>
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" OnClick="@(async () => await Save())">Save</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    public MudDialogInstance Dialog { get; set; }
+    
+    [Parameter]
+    public Guid ClientId { get; set; }
+    [Parameter]
+    public bool IsEdit { get; set; }
+    [Parameter]
+    public Goal Goal {get; set; }
+    
+    private Goal _goal = new();
+    private List<Metric> _metrics = new();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        try
+        {
+            _metrics = await HttpClient.GetFromJsonAsync<List<Metric>>($"api/Clients/{ClientId}/metrics");
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
+
+        if (IsEdit)
+        {
+            _goal = Goal;
+        }
+        
+        await base.OnParametersSetAsync();
+    }
+
+    private void Cancel() => Dialog.Cancel();
+
+    private async Task Save()
+    {
+        _goal.ClientProfileId = ClientId;
+
+        if (_goal.DeadlineUTC is not null)
+        {
+            DateTime.SpecifyKind(_goal.DeadlineUTC.Value, DateTimeKind.Local);
+            _goal.DeadlineUTC = _goal.DeadlineUTC?.ToUniversalTime();
+        }
+
+        try
+        {
+            var result = new HttpResponseMessage();
+
+            if (IsEdit) result = await HttpClient.PutAsJsonAsync($"api/Clients/{ClientId}/goals/{_goal.Id}", _goal);
+            else result = await HttpClient.PostAsJsonAsync($"api/Clients/{ClientId}/goals", _goal);
+
+            if (result.IsSuccessStatusCode)
+            {
+                Snackbar.Add("Goal saved.", Severity.Success);
+                Dialog.Close(DialogResult.Ok(true));
+            }
+            else
+            {
+                Snackbar.Add("Error saving Goal.", Severity.Error);
+            }
+        }
+        catch (Exception e)
+        {
+            Snackbar.Add("Error saving Goal.", Severity.Error);
+        }
+    }
+}

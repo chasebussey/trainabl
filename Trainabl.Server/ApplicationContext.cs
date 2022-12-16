@@ -17,6 +17,7 @@ public class ApplicationContext : DbContext
 	public DbSet<TrainerProfile> TrainerProfiles { get; set; }
 	public DbSet<ClientProfile> ClientProfiles { get; set; }
 	public DbSet<Metric> Metrics { get; set; }
+	public DbSet<Goal> Goals { get; set; }
 	
 	public DbSet<UserSettings> UserSettings { get; set; }
 	public DbSet<WorkoutNote> WorkoutNotes { get; set; }

@@ -9,4 +9,5 @@ public class ClientProfileDTO
 	public string Email { get; set; }
 	public DateTime CreatedUTC { get; set; }
 	public List<Metric> Metrics { get; set; }
+	public List<Goal> Goals { get; set; }
 }

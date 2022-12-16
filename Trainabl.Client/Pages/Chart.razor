@@ -1,7 +1,6 @@
 @inject IJSRuntime JsRuntime
 <style>
     .height-restricted {
-        height: 40vh;
     }
 </style>
 
@@ -65,7 +64,6 @@
             }
         };
         
-        Console.WriteLine($"App: Calling setup");
         await JsRuntime.InvokeVoidAsync("setup", Id, config);
         await base.OnAfterRenderAsync(firstRender);
     }

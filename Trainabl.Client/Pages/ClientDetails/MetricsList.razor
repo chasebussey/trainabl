@@ -6,7 +6,7 @@
 <div class="d-flex mud-width-max justify-end">
     <MudButton StartIcon="@Icons.Filled.Add" Color="Color.Primary" OnClick="() => ShowMetricForm(null)">Add Metric</MudButton>
 </div>
-    <MudList Clickable="true" Dense="true" Style="height: 40vh; overflow-y: auto">
+    <MudList Clickable="true" Dense="true" Style="overflow-y: auto">
         <MudListSubheader>Basic Metrics</MudListSubheader>
         @foreach (var metric in _metrics.Where(x => _basicMetricNames.Contains(x.Name)))
         {

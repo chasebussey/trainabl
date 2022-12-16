@@ -1,0 +1,139 @@
+@using Trainabl.Shared.Models
+@inject HttpClient HttpClient
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+
+<MudTable Elevation="0" Dense="true" ServerData="ServerReload" @ref="_table"
+          GroupBy="@_groupDefinition" GroupHeaderStyle="background-color: var(--mud-palette-background-grey)" Class="">
+    <ToolBarContent>
+        <MudSpacer/>
+        <MudCheckBox T="bool" Checked="@_showCompleted" CheckedChanged="@OnShowCompletedChanged" Class="mr-4">Show Completed Items</MudCheckBox>
+        <MudButton StartIcon="@Icons.Filled.Add" Color="Color.Primary" OnClick="async () => await ShowGoalForm(null, isEdit: false)">Add Goal</MudButton>
+    </ToolBarContent>
+    <ColGroup>
+        <col style="width: 60px"/>
+        <col/>
+        <col/>
+        <col/>
+    </ColGroup>
+    <HeaderContent>
+        <MudTh>Goal</MudTh>
+        <MudTh>Deadline</MudTh>
+        <MudTh>Actions</MudTh>
+    </HeaderContent>
+    <GroupHeaderTemplate>
+        <MudTh colspan="3" Class="mud-table-cell-custom-group">@($"{context.GroupName}: {context.Key}")</MudTh>
+    </GroupHeaderTemplate>
+    <RowTemplate>
+        <MudTd>@context.ToString()</MudTd>
+        <MudTd>@context.DeadlineUTC?.ToLocalTime().ToString("d")</MudTd>
+        <MudTd>
+            <MudTooltip Text="Mark as complete">
+                <MudIconButton Color="Color.Success" Icon="@Icons.Filled.Check" OnClick="async () => await MarkAsComplete(context)"/>
+            </MudTooltip>
+            <MudTooltip Text="Edit goal">
+                <MudIconButton Color="Color.Secondary" Icon="@Icons.Filled.Edit" OnClick="async () => await ShowGoalForm(context, isEdit: true)"/>
+            </MudTooltip>
+            <MudTooltip Text="Delete goal">
+                <MudIconButton Color="Color.Error" Icon="@Icons.Filled.Delete" OnClick="async () => await DeleteGoal(context)"/>
+            </MudTooltip>
+        </MudTd>
+    </RowTemplate>
+</MudTable>
+
+@code {
+    [CascadingParameter(Name = "ClientId")]
+    public Guid ClientId { get; set; }
+
+    private MudTable<Goal> _table;
+    private bool _showCompleted;
+
+    private TableGroupDefinition<Goal> _groupDefinition = new()
+    {
+        GroupName = "Group",
+        Indentation = false,
+        Expandable = true,
+        IsInitiallyExpanded = true,
+        Selector = (g) => g.GoalType
+    };
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+    }
+
+    private async Task ShowGoalForm(Goal? goal, bool isEdit = false)
+    {
+        var title = isEdit ? "Edit Goal" : "New Goal";
+        var parameters = new DialogParameters { ["ClientId"]=ClientId };
+        if (isEdit)
+        {
+            parameters.Add("IsEdit", true);
+            parameters.Add("Goal", goal);
+        }
+
+        var options = new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true };
+        
+        var dialog = DialogService.Show<GoalForm>(title, parameters, options);
+
+        var result = await dialog.Result;
+
+        if (!result.Cancelled)
+        {
+            await _table.ReloadServerData();
+        }
+    }
+
+    private async Task<TableData<Goal>> ServerReload(TableState state)
+    {
+        var goals = await HttpClient.GetFromJsonAsync<List<Goal>>($"api/clients/{ClientId}/goals");
+        
+        if (!_showCompleted)
+        {
+            goals = goals.Where(x => !x.IsComplete).ToList();
+        }
+        
+        goals = goals.OrderBy(x => x.GoalType).ToList();
+        
+        return new TableData<Goal> { Items = goals, TotalItems = goals.Count };
+    }
+
+    private async Task MarkAsComplete(Goal goal)
+    {
+        goal.IsComplete = true;
+        var result = await HttpClient.PutAsJsonAsync($"api/clients/{ClientId}/goals/{goal.Id}", goal);
+
+        if (result.IsSuccessStatusCode)
+        {
+            Snackbar.Add($"Goal {goal} completed.", Severity.Success);
+        }
+        else
+        {
+            Snackbar.Add($"Goal {goal} could not be marked complete.", Severity.Error);
+        }
+
+        await _table.ReloadServerData();
+    }
+
+    private async Task DeleteGoal(Goal goal)
+    {
+        var result = await HttpClient.DeleteAsync($"api/clients/{ClientId}/goals/{goal.Id}");
+
+        if (result.IsSuccessStatusCode)
+        {
+            Snackbar.Add($"Goal {goal} deleted.", Severity.Success);
+        }
+        else
+        {
+            Snackbar.Add($"Goal {goal} could not be deleted.", Severity.Error);
+        }
+
+        await _table.ReloadServerData();
+    }
+
+    private void OnShowCompletedChanged(bool val)
+    {
+        _showCompleted = val;
+        _table.ReloadServerData();
+    }
+}

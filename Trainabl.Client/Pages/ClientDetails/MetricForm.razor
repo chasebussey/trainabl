@@ -38,7 +38,7 @@
     {
         if (Metric != null)
         {
-            Metric.CreatedUTC = DateTime.Now;
+            Metric.CreatedUTC = DateTime.Now.ToUniversalTime();
             Metric.ClientProfileId = ClientId;
 
             var result = await HttpClient.PostAsJsonAsync("api/metrics", Metric);

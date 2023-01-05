@@ -51,7 +51,7 @@
                     <MudCard Elevation="0">
                         <MudCardHeader>
                             <CardHeaderContent>
-                                <MudText Typo="Typo.subtitle1">Note from @context.Workout.LatestNote.CreatedDateUTC.ToString("d")</MudText>
+                                <MudText Typo="Typo.subtitle1">Note from @context.Workout.LatestNote.CreatedDateUTC.ToLocalTime().ToString("d")</MudText>
                             </CardHeaderContent>
                         </MudCardHeader>
                         <MudCardContent Class="pa-0">

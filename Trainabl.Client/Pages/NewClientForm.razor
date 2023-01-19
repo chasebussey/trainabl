@@ -52,20 +52,16 @@
 
     private async Task Save()
     {
-        // calculate _bmi
-        _bmi.Value = _weight.Value / (_height.Value * _height.Value) * 703;
-        
-        // assign created dates for all measurements
-        _bmi.CreatedUTC = DateTime.UtcNow;
         _height.CreatedUTC = DateTime.UtcNow;
         _weight.CreatedUTC = DateTime.UtcNow;
 
         _client.Metrics = new List<Metric>
         {
             _height,
-            _weight,
-            _bmi
+            _weight
         };
+
+        _client.Goals = new List<Goal>();
 
         _client.TrainerProfileId = TrainerId;
         _client.CreatedUTC = DateTime.UtcNow;

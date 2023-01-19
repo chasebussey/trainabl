@@ -50,7 +50,7 @@ public class MovementsController : ControllerBase
 		IEnumerable<Movement> matches = _context.Movements;
 		if (name is not null)
 		{
-			matches = matches.Where(x => x.Name.Equals(name));
+			matches = matches.Where(x => x.Name.Contains(name, StringComparison.OrdinalIgnoreCase));
 		}
 
 		if (targetMuscleGroup is not null)

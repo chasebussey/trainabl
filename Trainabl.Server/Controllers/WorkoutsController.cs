@@ -218,6 +218,31 @@ public class WorkoutsController : ControllerBase
 	
 	#region Delete
 
+	[Authorize(Roles = "Trainer")]
+	[HttpDelete("{workoutId:guid}")]
+	public async Task<IActionResult> DeleteWorkout(Guid workoutId)
+	{
+		var user    = HttpContext.User;
+		var workout = await _context.Workouts.FindAsync(workoutId);
+
+		if (workout is null) return NotFound();
+
+		var isAuthorizedForWorkout = await _accessControl.IsAuthorizedForWorkout(user, workout);
+		if (!isAuthorizedForWorkout) return Forbid();
+
+		_context.Workouts.Remove(workout);
+
+		try
+		{
+			await _context.SaveChangesAsync();
+			return Ok();
+		}
+		catch (Exception e)
+		{
+			return UnprocessableEntity();
+		}
+	}
+
 	[Authorize(Roles="Trainer")]
 	[HttpDelete("{workoutId:guid}/workoutnotes")]
 	public async Task<IActionResult> DeleteWorkoutNotes(Guid workoutId)

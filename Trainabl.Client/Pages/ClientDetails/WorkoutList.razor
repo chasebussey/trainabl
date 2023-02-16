@@ -40,7 +40,7 @@
         <MudTd>
             <MudIconButton Icon="@Icons.Filled.Edit" Color="Color.Primary" Href="@($"EditWorkout/{context.Workout.Id}")"/>
             <MudIconButton Icon="@Icons.Filled.EditNote" Color="Color.Secondary" Href="@($"NewWorkoutNote/{context.Workout.Id}")"/>
-            <MudIconButton Icon="@Icons.Filled.Delete" Color="Color.Error"/>
+            <MudIconButton Icon="@Icons.Filled.Delete" Color="Color.Error" OnClick="@(async () => await DeleteWorkout(context.Workout.Id))"/>
         </MudTd>
     </RowTemplate>
     <ChildRowContent>
@@ -136,6 +136,15 @@
         var options = new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true };
         var parameters = new DialogParameters { ["ClientId"] = ClientId };
         DialogService.Show<AssignWorkoutDialog>("Assign a Template", parameters, options);
+    }
+
+    private async Task DeleteWorkout(Guid workoutId)
+    {
+        var response = await HttpClient.DeleteAsync($"/api/Workouts/{workoutId}");
+        if (response.IsSuccessStatusCode)
+        {
+            await _table.ReloadServerData();
+        }
     }
 
     internal class DisplayWorkout
